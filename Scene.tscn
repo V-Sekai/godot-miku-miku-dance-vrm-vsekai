@@ -1,24 +1,30 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=2]
 
-[ext_resource path="res://demo_env/grid-blue.png" type="Texture" id=1]
 [ext_resource path="res://demo_env/hilly_terrain_01_4k.exr" type="Texture" id=2]
 [ext_resource path="res://scripts/camera.gd" type="Script" id=4]
 [ext_resource path="res://scripts/MainControls.gd" type="Script" id=5]
 
-[sub_resource type="SpatialMaterial" id=1]
-albedo_texture = ExtResource( 1 )
+[sub_resource type="Gradient" id=1]
+colors = PoolColorArray( 1, 1, 1, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=2]
+gradient = SubResource( 1 )
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_texture = SubResource( 2 )
 uv1_triplanar = true
 
-[sub_resource type="PlaneMesh" id=2]
-material = SubResource( 1 )
+[sub_resource type="PlaneMesh" id=4]
+material = SubResource( 3 )
 size = Vector2( 10, 10 )
 
-[sub_resource type="PanoramaSky" id=3]
+[sub_resource type="PanoramaSky" id=5]
 panorama = ExtResource( 2 )
 
-[sub_resource type="Environment" id=4]
-background_mode = 2
-background_sky = SubResource( 3 )
+[sub_resource type="Environment" id=6]
+background_mode = 3
+background_sky = SubResource( 5 )
+background_color = Color( 0.843137, 0.827451, 0.776471, 1 )
 ambient_light_color = Color( 0.49, 0.49, 0.49, 1 )
 ambient_light_energy = 0.6
 ambient_light_sky_contribution = 0.36
@@ -33,11 +39,11 @@ glow_bicubic_upscale = true
 [node name="Spatial" type="Spatial"]
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
-mesh = SubResource( 2 )
-material/0 = null
+mesh = SubResource( 4 )
+material/0 = SubResource( 3 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 4 )
+environment = SubResource( 6 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 0.212911, -0.780995, -0.587125, 0.897283, -0.0815475, 0.433858, -0.38672, -0.619191, 0.683411, 0.343577, 2.31051, -0.292323 )
@@ -158,13 +164,14 @@ margin_left = -298.0
 margin_top = -163.0
 margin_right = 298.0
 margin_bottom = 163.0
-window_title = "Abrir un Archivo"
+rect_min_size = Vector2( 300, 105 )
+window_title = "Open a File"
 mode = 0
 access = 2
 filters = PoolStringArray( "*.vrm ; VRM" )
 show_hidden_files = true
-current_dir = "/home/eirexe/VMDMotionTest"
-current_path = "/home/eirexe/VMDMotionTest/"
+current_dir = "/home/setup/Downloads/VMDMotionDemo"
+current_path = "/home/setup/Downloads/VMDMotionDemo/"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -178,13 +185,14 @@ margin_left = -298.0
 margin_top = -163.0
 margin_right = 298.0
 margin_bottom = 163.0
-window_title = "Abrir Archivo(s)"
+rect_min_size = Vector2( 300, 105 )
+window_title = "Open File(s)"
 mode = 1
 access = 2
 filters = PoolStringArray( "*.vmd ; VMD" )
 show_hidden_files = true
-current_dir = "/home/eirexe/VMDMotionTest"
-current_path = "/home/eirexe/VMDMotionTest/"
+current_dir = "/home/setup/Downloads/VMDMotionDemo"
+current_path = "/home/setup/Downloads/VMDMotionDemo/"
 __meta__ = {
 "_edit_use_anchors_": false
 }
