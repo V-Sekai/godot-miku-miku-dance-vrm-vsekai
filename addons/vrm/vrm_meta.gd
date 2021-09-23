@@ -48,6 +48,8 @@ export var other_license_url: String
 # We may need to store it somewhere in case we wish to re-export.
 export var humanoid_bone_mapping: Dictionary # VRM boneName -> bone name (within skeleton)
 
+export var blend_shape_groups: Dictionary
+
 # firstPersonBoneOffset:
 # The target position of the VR headset in first-person view.
 # It is assumed that an offset from the head bone to the VR headset is added.

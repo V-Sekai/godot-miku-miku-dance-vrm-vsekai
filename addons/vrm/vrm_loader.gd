@@ -359,6 +359,10 @@ func _create_meta(root_node: Node, animplayer: AnimationPlayer, vrm_extension: D
 
 	vrm_meta.eye_offset = eyeOffset
 	vrm_meta.humanoid_bone_mapping = humanBoneDictionary
+	vrm_meta.blend_shape_groups = {}
+	for group in vrm_extension["blendShapeMaster"]["blendShapeGroups"]:
+		if "presetName" in group:
+			vrm_meta.blend_shape_groups[group.presetName] = group
 	return vrm_meta.duplicate(true)
 
 

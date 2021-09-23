@@ -143,6 +143,11 @@ anchor_bottom = 1.0
 margin_top = -14.0
 text = "Project Heartbeat Laboratorio"
 align = 2
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Control"]
 
 [node name="VRMOpenFileDialog" type="FileDialog" parent="."]
 anchor_left = 0.5
@@ -173,8 +178,8 @@ margin_left = -298.0
 margin_top = -163.0
 margin_right = 298.0
 margin_bottom = 163.0
-window_title = "Abrir un Archivo"
-mode = 0
+window_title = "Abrir Archivo(s)"
+mode = 1
 access = 2
 filters = PoolStringArray( "*.vmd ; VMD" )
 show_hidden_files = true
@@ -187,7 +192,10 @@ __meta__ = {
 [node name="4490707391186690073" parent="." instance_placeholder="res://demo_vrms/4490707391186690073.vrm"]
 transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0 )
 
+[node name="Position3D" type="Position3D" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.625, 0.8, -0.108 )
+
 [connection signal="pressed" from="Control/Panel/MarginContainer/VBoxContainer/Button" to="VRMOpenFileDialog" method="popup_centered_ratio" binds= [ 0.75 ]]
 [connection signal="pressed" from="Control/Panel/MarginContainer/VBoxContainer/Button2" to="VMDOpenFileDialog" method="popup_centered_ratio" binds= [ 0.75 ]]
 [connection signal="file_selected" from="VRMOpenFileDialog" to="Control" method="_on_VRMOpenFileDialog_file_selected"]
-[connection signal="file_selected" from="VMDOpenFileDialog" to="Control" method="_on_VMDOpenFileDialog_file_selected"]
+[connection signal="files_selected" from="VMDOpenFileDialog" to="Control" method="_on_VMDOpenFileDialog_files_selected"]
