@@ -19,10 +19,12 @@ func _unhandled_input(event):
 func _ready():
 	call_deferred("instance_model")
 	h_slider.connect("value_changed", self, "_on_time_changed_by_user")
+	motion_paths.push_back("res://demo_vmd/Pronama_motion/melt.vmd")
+	call_deferred("_on_VMDOpenFileDialog_files_selected", motion_paths)
 
 func instance_model():
 	var model_instance: Spatial
-	if model_path.begins_with("res://"):
+	if model_path.begins_with("res://melt.vmd"):
 		model_instance = load(model_path).instance()
 	else:
 		var vrm_loader = load("res://addons/vrm/vrm_loader.gd").new()
