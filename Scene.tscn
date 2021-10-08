@@ -146,8 +146,12 @@ align = 1
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_top = -14.0
-text = "Project Heartbeat Laboratorio"
+margin_left = 10.0
+margin_top = -41.0
+margin_right = -10.0
+margin_bottom = 10.0
+text = "V-Sekai
+Project Heartbeat Laboratorio"
 align = 2
 __meta__ = {
 "_edit_use_anchors_": false
