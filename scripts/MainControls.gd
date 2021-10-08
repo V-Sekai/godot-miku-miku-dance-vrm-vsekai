@@ -8,7 +8,6 @@ var max_frame: int
 
 onready var root = get_node("..")
 onready var h_slider: HSlider = get_node("Panel/MarginContainer/VBoxContainer/HSlider")
-#onready var asp = get_node("AudioStreamPlayer")
 
 const VRMImport = preload("res://addons/vrm/import_vrm.gd")
 
@@ -55,14 +54,12 @@ func _process(delta):
 	
 func _on_time_changed_by_user(value: float):
 	vmd_player.start_time = int(OS.get_ticks_msec() - value * 1000.0)
-	#asp.seek(value)
 	
 func instance_motion():
 	if motion_paths.size() > 0:
 		assert(vmd_player, "VMD player must exist")
 		vmd_player.load_motions(motion_paths)
 		max_frame = vmd_player.max_frame
-		#asp.play(0.0)
 
 func _on_VRMOpenFileDialog_file_selected(path: String):
 	model_path = path
