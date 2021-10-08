@@ -22,12 +22,8 @@ func _ready():
 	call_deferred("_on_VMDOpenFileDialog_files_selected", motion_paths)
 
 func instance_model():
-	var model_instance: Spatial
-	if model_path.begins_with("res://melt.vmd"):
-		model_instance = load(model_path).instance()
-	else:
-		var vrm_loader = load("res://addons/vrm/vrm_loader.gd").new()
-		model_instance = vrm_loader.import_scene(model_path, 1, 1000)
+	var vrm_loader = load("res://addons/vrm/vrm_loader.gd").new()
+	var model_instance : Spatial = vrm_loader.import_scene(model_path, 1, 1000)
 	
 	if animator:
 		animator.queue_free()
