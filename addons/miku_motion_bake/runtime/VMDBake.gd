@@ -30,25 +30,6 @@ func _ready():
 	for key_i in anims.keys():
 		anims[key_i].loop = true
 		new_animation_player.add_animation(key_i, anims[key_i])
-
-	var pending_delete : Array
-	var queue : Array
-	queue.push_back(model_instance)
-	while not queue.empty():
-		var front = queue.front()
-		var node = front
-		if node is MeshInstance:
-			var mesh : Mesh = node.get_mesh()
-			# Has blend shapes then delete to fix bug in Godot Engine
-			if VisualServer.mesh_get_blend_shape_count(mesh.get_rid()):
-				pending_delete.push_back(node)
-#			node.material_override = SpatialMaterial.new()
-		var child_count : int = node.get_child_count()
-		for i in child_count:
-			queue.push_back(node.get_child(i))
-		queue.pop_front()
-#	_hack_fix_godot_3(pending_delete)
-
 	var gltf : PackedSceneGLTF = PackedSceneGLTF.new()
 	gltf.pack(model_instance)
 	ResourceSaver.save("res://.import/save_motion.scn", gltf)
@@ -57,11 +38,3 @@ func _ready():
 
 func _process(_delta):
 	get_tree().quit(0)
-
-
-func _hack_fix_godot_3(pending_delete : Array) -> void:
-	while not pending_delete.empty():
-		var front = pending_delete.front()
-		var node = front
-		node.free()
-		pending_delete.pop_front()
