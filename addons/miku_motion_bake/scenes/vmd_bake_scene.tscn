@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/miku_motion_bake/runtime/VMDBake.gd" type="Script" id=1]
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 1 )
+motion_path = "res://demo_vmd/Pronama_motion/melt.vmd"
+model_path = "res://demo_vrms/4490707391186690073.vrm"

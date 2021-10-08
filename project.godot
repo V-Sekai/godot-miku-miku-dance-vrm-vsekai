@@ -15,14 +15,29 @@ _global_script_classes=[ {
 "path": "res://addons/vmd_motion/common/Morph.gd"
 }, {
 "base": "Reference",
+"class": "MorphBake",
+"language": "GDScript",
+"path": "res://addons/miku_motion_bake/common/Morph.gd"
+}, {
+"base": "Reference",
 "class": "Motion",
 "language": "GDScript",
 "path": "res://addons/vmd_motion/common/Motion.gd"
 }, {
 "base": "Reference",
+"class": "MotionBake",
+"language": "GDScript",
+"path": "res://addons/miku_motion_bake/common/Motion.gd"
+}, {
+"base": "Reference",
 "class": "ShiftJISTable",
 "language": "GDScript",
 "path": "res://addons/vmd_motion/common/ShiftJISTable.gd"
+}, {
+"base": "Reference",
+"class": "ShiftJISTableBake",
+"language": "GDScript",
+"path": "res://addons/miku_motion_bake/common/ShiftJISTable.gd"
 }, {
 "base": "Reference",
 "class": "VMD",
@@ -39,20 +54,40 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/vmd_motion/runtime/VMDPlayer.gd"
 }, {
+"base": "Spatial",
+"class": "VMDPlayerBake",
+"language": "GDScript",
+"path": "res://addons/miku_motion_bake/runtime/VMDPlayer.gd"
+}, {
 "base": "Reference",
 "class": "VMDSkeleton",
 "language": "GDScript",
 "path": "res://addons/vmd_motion/common/Skeleton.gd"
 }, {
 "base": "Reference",
+"class": "VMDSkeletonBake",
+"language": "GDScript",
+"path": "res://addons/miku_motion_bake/common/Skeleton.gd"
+}, {
+"base": "Reference",
 "class": "VMDUtils",
 "language": "GDScript",
 "path": "res://addons/vmd_motion/common/VMDUtils.gd"
+}, {
+"base": "Reference",
+"class": "VMDUtilsBake",
+"language": "GDScript",
+"path": "res://addons/miku_motion_bake/common/VMDUtils.gd"
 }, {
 "base": "VMDAnimatorBase",
 "class": "VRMAnimator",
 "language": "GDScript",
 "path": "res://addons/vmd_motion/runtime/VRMAnimator.gd"
+}, {
+"base": "Spatial",
+"class": "VRMAnimatorBake",
+"language": "GDScript",
+"path": "res://addons/miku_motion_bake/runtime/VMDAnimatorBase.gd"
 }, {
 "base": "Spatial",
 "class": "VRMTopLevel",
@@ -61,14 +96,21 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "Morph": "",
+"MorphBake": "",
 "Motion": "",
+"MotionBake": "",
 "ShiftJISTable": "",
+"ShiftJISTableBake": "",
 "VMD": "",
 "VMDAnimatorBase": "",
 "VMDPlayer": "",
+"VMDPlayerBake": "",
 "VMDSkeleton": "",
+"VMDSkeletonBake": "",
 "VMDUtils": "",
+"VMDUtilsBake": "",
 "VRMAnimator": "",
+"VRMAnimatorBake": "",
 "VRMTopLevel": ""
 }
 
@@ -92,7 +134,7 @@ convert_text_resources_to_binary_on_export=true
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/vmd_motion/plugin.cfg", "res://addons/vrm/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/miku_motion_bake/plugin.cfg", "res://addons/vmd_motion/plugin.cfg", "res://addons/vrm/plugin.cfg" )
 
 [importer_defaults]
 
