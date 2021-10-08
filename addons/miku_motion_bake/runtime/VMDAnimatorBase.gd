@@ -113,4 +113,4 @@ func set_blend_shape_value(blend_shape_name: String, value: float):
 			if bind.mesh < mesh_idx_to_mesh.size():
 				var weight = 0.99999 * float(bind.weight) / 100.0
 				var mesh := mesh_idx_to_mesh[bind.mesh] as MeshInstance
-				mesh.set("blend_shapes/MorphBake_%d" % [bind.index], value * weight)
+				mesh.set("blend_shapes/Morph_%d" % [bind.index], value * weight)
