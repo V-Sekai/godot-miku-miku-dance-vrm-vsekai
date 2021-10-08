@@ -126,6 +126,7 @@ StandardBones="*res://addons/vmd_motion/common/StandardBones.gd"
 
 [display]
 
+window/dpi/allow_hidpi=true
 window/vsync/use_vsync=false
 
 [editor]
