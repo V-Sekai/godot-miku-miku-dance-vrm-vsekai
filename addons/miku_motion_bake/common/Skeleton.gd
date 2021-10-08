@@ -39,6 +39,8 @@ class VMDSkelBone:
 			target.basis = Basis(node.global_transform.basis.get_rotation_quat() * target_rotation)
 			update_pose()
 	func update_pose():
+		if skeleton == null:
+			return
 		if target_bone_skel_i == -1:
 			return
 		skeleton.set_bone_global_pose_override(target_bone_skel_i, target, 1.0, true)

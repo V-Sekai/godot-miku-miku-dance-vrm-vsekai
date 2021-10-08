@@ -123,6 +123,10 @@ class VRMSpringBoneLogic:
 		return get_local_transform(skel_polyfill).basis.get_rotation_quat()
 	
 	func reset(skel_polyfill: Object) -> void:
+		if skel_polyfill == null:
+			return
+		if bone_idx == -1:
+			return
 		skel_polyfill.set_bone_global_pose_override(bone_idx, initial_transform, 1.0)
 		return
 	
@@ -170,6 +174,10 @@ class VRMSpringBoneLogic:
 		# Apply rotation
 		var ft = VRMTopLevel.VRMUtil.from_to_rotation((get_rotation(skel, skel_polyfill) * (bone_axis)), next_tail - get_transform(skel, skel_polyfill).origin)
 		if typeof(ft) != TYPE_NIL:
+			if skel == null:
+				return
+			if bone_idx == -1:
+				return
 			ft = skel.global_transform.basis.get_rotation_quat().inverse() * ft
 			var qt: Quat = ft * get_rotation(skel, skel_polyfill)
 			var tr: Transform = get_local_transform(skel_polyfill)
