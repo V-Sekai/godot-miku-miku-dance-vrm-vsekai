@@ -33,8 +33,6 @@ func _ready():
 	var scene : PackedScene = PackedScene.new()
 	scene.pack(model_instance)
 	ResourceSaver.save("res://.import/save_motion.scn", scene)
-#	var gltf : PackedSceneGLTF = PackedSceneGLTF.new()
-#	gltf.export_gltf(model_instance, "res://.import/" + model_path.get_file() + "_" + motion_path.get_file().get_basename() + ".glb")
 
 
 func _process(_delta):
