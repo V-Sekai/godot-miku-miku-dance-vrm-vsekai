@@ -24,14 +24,15 @@ func _ready():
 	var paths : Array
 	paths.push_back(motion_path)
 	vmd_player.load_motions(paths)
-	var motions : Array
-	var anims : Dictionary = vmd_player.save_motion(motion_path.get_file().get_basename())	
-	var new_animation_player : AnimationPlayer= model_instance.get_node("anim")
-	for key_i in anims.keys():
-		new_animation_player.add_animation(key_i, anims[key_i])
-	var scene : PackedScene = PackedScene.new()
-	scene.pack(model_instance)
-	ResourceSaver.save("res://.import/save_motion.scn", scene, ResourceSaver.FLAG_COMPRESS)
+	for path in paths:
+		var anims : Dictionary = vmd_player.save_motion(path.get_file().get_basename())
+		var new_animation_player : AnimationPlayer= model_instance.get_node("anim")
+		for key_i in anims.keys():
+			new_animation_player.add_animation(key_i, anims[key_i])
+		var scene : PackedScene = PackedScene.new()
+		scene.pack(model_instance)
+		ResourceSaver.save("res://.import/%s_%s.scn" % [model_path.get_file().get_basename(), path.get_file().get_basename()], 
+			scene, ResourceSaver.FLAG_COMPRESS)
 
 
 func _process(_delta):
