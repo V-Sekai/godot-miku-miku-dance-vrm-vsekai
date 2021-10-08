@@ -28,7 +28,6 @@ func _ready():
 	var anims : Dictionary = vmd_player.save_motion(motion_path.get_file().get_basename())	
 	var new_animation_player : AnimationPlayer= model_instance.get_node("anim")
 	for key_i in anims.keys():
-		anims[key_i].loop = true
 		new_animation_player.add_animation(key_i, anims[key_i])
 	var scene : PackedScene = PackedScene.new()
 	scene.pack(model_instance)
