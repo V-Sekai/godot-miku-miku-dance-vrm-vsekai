@@ -30,9 +30,10 @@ func _ready():
 	for key_i in anims.keys():
 		anims[key_i].loop = true
 		new_animation_player.add_animation(key_i, anims[key_i])
-	var gltf : PackedSceneGLTF = PackedSceneGLTF.new()
-	gltf.pack(model_instance)
-	ResourceSaver.save("res://.import/save_motion.scn", gltf)
+	var scene : PackedScene = PackedScene.new()
+	scene.pack(model_instance)
+	ResourceSaver.save("res://.import/save_motion.scn", scene)
+#	var gltf : PackedSceneGLTF = PackedSceneGLTF.new()
 #	gltf.export_gltf(model_instance, "res://.import/" + model_path.get_file() + "_" + motion_path.get_file().get_basename() + ".glb")
 
 
