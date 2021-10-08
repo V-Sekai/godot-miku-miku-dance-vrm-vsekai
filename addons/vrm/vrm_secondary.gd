@@ -94,6 +94,8 @@ func _ready():
 	if true or not Engine.editor_hint:
 		for collider_group in collider_groups:
 			var new_collider_group = collider_group.duplicate(true)
+			if not new_collider_group:
+				continue
 			var parent: Spatial = get_node_or_null(new_collider_group.skeleton_or_node)
 			var parent_polyfill: Object = parent
 			if parent != null:

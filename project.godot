@@ -74,7 +74,7 @@ _global_script_class_icons={
 
 [application]
 
-config/name="VMDMotionDemo"
+config/name="MikuVRMMotion"
 run/main_scene="res://Scene.tscn"
 config/icon="res://icon.png"
 
@@ -85,6 +85,10 @@ StandardBones="*res://addons/vmd_motion/common/StandardBones.gd"
 [display]
 
 window/vsync/use_vsync=false
+
+[editor]
+
+convert_text_resources_to_binary_on_export=true
 
 [editor_plugins]
 

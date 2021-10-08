@@ -1,7 +1,7 @@
 extends Control
 
 var model_path: String = "res://demo_vrms/4490707391186690073.vrm"
-var motion_paths: Array
+var motion_paths: Array = ["res://demo_vmd/Pronama_motion/melt.vmd"]
 var vmd_player: VMDPlayer
 var animator: VRMAnimator
 var max_frame: int
@@ -15,15 +15,24 @@ func _unhandled_input(event):
 	if event.is_action_pressed("toggle_ui"):
 		visible = !visible
 
+
+func _copy_user(current_path : String):	
+	var dir = Directory.new()
+	var new_path : String = "user://" + current_path.get_file().get_basename() + "." + current_path.get_extension()
+	dir.copy(current_path, new_path)
+	return new_path
+	
+	
 func _ready():
 	call_deferred("instance_model")
+# warning-ignore:return_value_discarded
 	h_slider.connect("value_changed", self, "_on_time_changed_by_user")
-	motion_paths.push_back("res://demo_vmd/Pronama_motion/melt.vmd")
 	call_deferred("_on_VMDOpenFileDialog_files_selected", motion_paths)
 
+
 func instance_model():
-	var vrm_loader = load("res://addons/vrm/vrm_loader.gd").new()
-	var model_instance : Spatial = vrm_loader.import_scene(model_path, 1, 1000)
+	var vrm_loader = load("res://addons/vrm/vrm_loader.gd").new()	
+	var model_instance : Spatial = vrm_loader.import_scene(_copy_user(model_path), 1, 1000)
 	
 	if animator:
 		animator.queue_free()
@@ -42,7 +51,7 @@ func instance_model():
 	vmd_player.animator_path = animator.get_path()
 	root.add_child(vmd_player)
 
-func _process(delta):
+func _process(_delta):
 	h_slider.set_block_signals(true)
 	h_slider.max_value = vmd_player.max_frame / 30.0
 	h_slider.value = (OS.get_ticks_msec() - vmd_player.start_time) / 1000.0

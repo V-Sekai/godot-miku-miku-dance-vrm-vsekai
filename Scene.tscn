@@ -170,8 +170,8 @@ mode = 0
 access = 2
 filters = PoolStringArray( "*.vrm ; VRM" )
 show_hidden_files = true
-current_dir = "/home/setup/Downloads/VMDMotionDemo"
-current_path = "/home/setup/Downloads/VMDMotionDemo/"
+current_dir = "/chibifire/motion"
+current_path = "/chibifire/motion/"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -191,14 +191,11 @@ mode = 1
 access = 2
 filters = PoolStringArray( "*.vmd ; VMD" )
 show_hidden_files = true
-current_dir = "/home/setup/Downloads/VMDMotionDemo"
-current_path = "/home/setup/Downloads/VMDMotionDemo/"
+current_dir = "/chibifire/motion"
+current_path = "/chibifire/motion/"
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="4490707391186690073" parent="." instance_placeholder="res://demo_vrms/4490707391186690073.vrm"]
-transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0 )
 
 [node name="Position3D" type="Position3D" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.625, 0.8, -0.108 )
