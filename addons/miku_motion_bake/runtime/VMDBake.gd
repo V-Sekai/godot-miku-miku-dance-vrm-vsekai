@@ -32,7 +32,7 @@ func _ready():
 		new_animation_player.add_animation(key_i, anims[key_i])
 	var scene : PackedScene = PackedScene.new()
 	scene.pack(model_instance)
-	ResourceSaver.save("res://.import/save_motion.scn", scene)
+	ResourceSaver.save("res://.import/save_motion.scn", scene, ResourceSaver.FLAG_COMPRESS)
 
 
 func _process(_delta):
