@@ -23,7 +23,7 @@ var motion: MotionBake
 var bone_curves = []
 var vmd_skeleton: VMDSkeletonBake
 var apply_ikq = false
-var morph_bake: MorphBake
+var vmd_morph: MorphBake
 var first_frame_number: int
 var max_frame: int
 
@@ -104,7 +104,7 @@ func load_motions(motion_paths: Array):
 		# TODO: this
 		#var source_overrides = {}
 		vmd_skeleton = VMDSkeletonBake.new(animator, self)
-		morph_bake = MorphBake.new(animator, motion.faces.keys())
+		vmd_morph = MorphBake.new(animator, motion.faces.keys())
 	for bone_i in [StandardBones.get_bone_i("左足ＩＫ"), StandardBones.get_bone_i("左つま先ＩＫ"), 
 					StandardBones.get_bone_i("右足ＩＫ"), StandardBones.get_bone_i("右つま先ＩＫ")]:
 		vmd_skeleton.bones[bone_i].ik_enabled = bone_curves[bone_i].keyframes.size() > 1
@@ -190,6 +190,52 @@ func save_motion(basename):
 			var new_rot : Quat = local_pose.basis.get_rotation_quat()
 			var new_scale : Vector3 = local_pose.basis.get_scale()
 			animation.transform_track_insert_key(bone_id, frame_i / FPS, new_loc, new_rot, new_scale)
+
+		for key_id in vmd_morph.shapes.size():
+			if not vmd_morph.shapes.has(key_id):
+				continue
+			var key = vmd_morph.shapes[key_id]
+			var track_i = animation.get_track_count()
+			animation.add_track(Animation.TYPE_VALUE)
+			var path = str(animator.skeleton.get_owner().get_path_to(animator.skeleton)) + ":blend_shape/" + key
+			animation.track_set_path(track_i, path)
+			animation.transform_track_insert_key(track_i, 0.0, Vector3(), Quat(), Vector3(1.0, 1.0, 1.0))
+		
+		var morph_key_to_path : Dictionary
+		for key_id in vmd_morph.shapes.size():
+			if not vmd_morph.shapes.has(key_id):
+				continue
+			var key = vmd_morph.shapes[key_id]
+			var value = motion.faces[key] as MotionBake.FaceCurve
+			var group = animator.vrm.meta.blend_shape_groups[key]
+			for bind in group.binds:
+				if bind.mesh < animator.mesh_idx_to_mesh.size():
+					var weight = 0.99999 * float(bind.weight) / 100.0
+					var mesh := animator.mesh_idx_to_mesh[bind.mesh] as MeshInstance
+					var path = str(animator.skeleton.get_owner().get_path_to(animator.skeleton)) + ":blend_shapes/Morph_%d" % [bind.index]
+					var track_i = animation.get_track_count()
+					morph_key_to_path[key] = path
+					animation.add_track(Animation.TYPE_VALUE)
+					animation.track_insert_key(track_i, 0.0, value * weight)
+		
+		
+		for key_id in vmd_morph.shapes.size():
+			if not vmd_morph.shapes.has(key_id):
+				continue
+			var key = vmd_morph.shapes[key_id]
+			var value = motion.faces[key] as MotionBake.FaceCurve			
+			var group = animator.vrm.meta.blend_shape_groups[key]
+			for bind in group.binds:
+				if bind.mesh < animator.mesh_idx_to_mesh.size():
+					var weight = 0.99999 * float(bind.weight) / 100.0
+					var mesh := animator.mesh_idx_to_mesh[bind.mesh] as MeshInstance
+					var path = morph_key_to_path[key]
+					var track_i = animation.find_track(path)
+					if track_i == -1:
+						continue
+					animation.track_insert_key(track_i, frame_i / FPS, value * weight)
+			
+			
 	new_anims["MMD Animation " + basename] = animation
 	return new_anims
 	
@@ -200,7 +246,7 @@ func update_frame(frame: float):
 	apply_bone_frame(frame)
 	vmd_skeleton.apply_constraints(enable_ik, enable_ik and enable_ikq)
 	vmd_skeleton.apply_targets()
-	morph_bake.apply_targets()
+	vmd_morph.apply_targets()
 	if camera:
 		apply_camera_frame(frame)
 
@@ -209,8 +255,8 @@ func apply_face_frame(frame: float):
 
 	for key in motion.faces:
 		var value = motion.faces[key] as MotionBake.FaceCurve
-		if key in morph_bake.shapes:
-			var shape = morph_bake.shapes[key]
+		if key in vmd_morph.shapes:
+			var shape = vmd_morph.shapes[key]
 			shape.weight = value.sample(frame)
 
 func apply_camera_frame(frame: float):
