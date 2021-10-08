@@ -87,7 +87,7 @@ _global_script_classes=[ {
 "base": "Spatial",
 "class": "VRMAnimatorBake",
 "language": "GDScript",
-"path": "res://addons/miku_motion_bake/runtime/VMDAnimatorBase.gd"
+"path": "res://addons/miku_motion_bake/runtime/VMDAnimatorBake.gd"
 }, {
 "base": "Spatial",
 "class": "VRMTopLevel",
