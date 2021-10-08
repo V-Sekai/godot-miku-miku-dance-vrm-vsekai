@@ -37,3 +37,7 @@ func _input(event):
 		if event is InputEventMouseMotion:
 			rotate_y(-event.relative.x * deg2rad(10.0) * get_process_delta_time())
 			$Spatial.rotate_x(-event.relative.y * deg2rad(10.0) * get_process_delta_time())
+
+
+func _on_VMDOpenFileDialog_files_bake_selected(path):
+	pass # Replace with function body.

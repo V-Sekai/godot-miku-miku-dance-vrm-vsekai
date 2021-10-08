@@ -24,10 +24,10 @@ func _copy_user(current_path : String):
 	
 	
 func _ready():
-	call_deferred("instance_model")
+#	call_deferred("instance_model")
 # warning-ignore:return_value_discarded
 	h_slider.connect("value_changed", self, "_on_time_changed_by_user")
-	call_deferred("_on_VMDOpenFileDialog_files_selected", motion_paths)
+#	call_deferred("_on_VMDOpenFileDialog_files_selected", motion_paths)
 
 
 func instance_model():
@@ -52,6 +52,8 @@ func instance_model():
 	root.add_child(vmd_player)
 
 func _process(_delta):
+	if not vmd_player:
+		return
 	h_slider.set_block_signals(true)
 	h_slider.max_value = vmd_player.max_frame / 30.0
 	h_slider.value = (OS.get_ticks_msec() - vmd_player.start_time) / 1000.0
@@ -75,3 +77,39 @@ func _on_VMDOpenFileDialog_files_selected(paths):
 	motion_paths = paths
 	instance_model()
 	instance_motion()
+	
+func _on_VMDOpenFileDialog_files_bake_selected(path: String):
+	model_path = path
+	instance_model()
+	bake_motions()
+	
+func bake_motions():
+	var vmd_player: VMDPlayer
+	var animator: VRMAnimator
+	var model_instance: Spatial
+	if model_path.begins_with("res://"):
+		model_instance = load(model_path).instance()
+	else:
+		var vrm_loader = load("res://addons/vrm/vrm_loader.gd").new()
+		model_instance = vrm_loader.import_scene(model_path, 1, 1000)
+	model_instance.rotate_y(deg2rad(180))
+	animator = VRMAnimator.new()
+	vmd_player = VMDPlayer.new()
+	animator.add_child(model_instance)
+	add_child(animator)
+	vmd_player.animator_path = animator.get_path()
+	add_child(vmd_player)
+	var paths : Array
+	vmd_player.load_motions(motion_paths)
+	var motions : Array
+	for motion in paths:
+		var anims : Dictionary = vmd_player.save_motion(motion.get_file().get_basename())	
+		var new_animation_player : AnimationPlayer= model_instance.get_node("anim")
+		for key_i in anims.keys():
+			anims[key_i].loop = true
+			new_animation_player.add_animation(key_i, anims[key_i])
+		var gltf : PackedSceneGLTF = PackedSceneGLTF.new()
+		gltf.pack(model_instance)
+		ResourceSaver.save("user://save_motion.scn", gltf)
+#		gltf.export_gltf(model_instance, "user://" + model_path.get_file() + "_" + motion.get_file().get_basename() + ".glb")
+		OS.shell_open("user://")
