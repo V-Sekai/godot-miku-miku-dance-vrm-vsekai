@@ -86,7 +86,7 @@ func bake_motions():
 		var gltf : PackedSceneGLTF = PackedSceneGLTF.new()
 		gltf.pack(model_instance)
 #		ResourceSaver.save("user://save_motion.scn", gltf)
-		gltf.export_gltf(model_instance, "user://" + model_path.get_file() + "_" + motion.get_file().get_basename() + ".glb")
+		gltf.export_gltf(model_instance, "user://" + model_path.get_file() + "_" + motion.get_file().get_basename() + str(count) + ".glb")
 		model_instance.queue_free()
 		count += 1
 	OS.shell_open("user://")
