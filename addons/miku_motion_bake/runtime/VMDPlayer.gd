@@ -161,8 +161,27 @@ func save_motion(basename):
 		animation.add_track(Animation.TYPE_TRANSFORM)
 		var path = str(animator.skeleton.get_owner().get_path_to(animator.skeleton)) + ":" + animator.skeleton.get_bone_name(bone_id)
 		animation.track_set_path(track_i, path)
-		animation.transform_track_insert_key(track_i, 0.0, Vector3(), Quat(), Vector3(1.0, 1.0, 1.0))
+	
+	for key in morph_bake.shapes:
+		if not key in animator.MMD_TO_VRM_MorphBake:
+			continue
+		var blend_shape_name = animator.MMD_TO_VRM_MorphBake[key]
+		var group = animator.vrm.vrm_meta.blend_shape_groups[blend_shape_name]
+		for bind in group.binds:
+			if bind.mesh >= animator.mesh_idx_to_mesh.size():
+				continue
+			if not morph_bake.shapes.has(key):
+				continue
+			var mesh := animator.mesh_idx_to_mesh[bind.mesh] as MeshInstance
+			var path = str(animator.skeleton.get_owner().get_path_to(mesh)) + ":" + "blend_shapes/Morph_%d" % [bind.index]
+			var track_i = animation.get_track_count()
+			if track_i == -1:
+				continue
+			animation.add_track(Animation.TYPE_VALUE)
+			animation.track_set_path(track_i, path)
+				
 	animation.length = max_frame / FPS
+		
 	for frame_i in range(first_frame_number, max_frame):
 		update_frame(frame_i)
 		
@@ -190,6 +209,25 @@ func save_motion(basename):
 			var new_rot : Quat = local_pose.basis.get_rotation_quat()
 			var new_scale : Vector3 = local_pose.basis.get_scale()
 			animation.transform_track_insert_key(bone_id, frame_i / FPS, new_loc, new_rot, new_scale)
+
+		for key in morph_bake.shapes:
+			if not key in animator.MMD_TO_VRM_MorphBake:
+				continue
+			var blend_shape_name = animator.MMD_TO_VRM_MorphBake[key]
+			var group = animator.vrm.vrm_meta.blend_shape_groups[blend_shape_name]
+			for bind in group.binds:			
+				if bind.mesh >= animator.mesh_idx_to_mesh.size():
+					continue
+				if not morph_bake.shapes.has(key):
+					continue
+				var mesh := animator.mesh_idx_to_mesh[bind.mesh] as MeshInstance
+				var path = str(animator.skeleton.get_owner().get_path_to(mesh)) + ":" + "blend_shapes/Morph_%d" % [bind.index]
+				var track_i = animation.find_track(path)
+				if track_i == -1:
+					continue		
+				var shape = morph_bake.shapes[key]					
+				animation.track_insert_key(track_i, frame_i / FPS, shape.weight)
+		
 	new_anims["MMD Animation " + basename] = animation
 	return new_anims
 	

@@ -27,6 +27,9 @@ func _ready():
 	skeleton = vrm.get_node(vrm.vrm_skeleton) as Skeleton
 	_fetch_reset_animation(skeleton, rest_bones)	
 	_fix_skeleton(skeleton, rest_bones)
+	for child in skeleton.get_children():
+		if child is MeshInstance:
+			mesh_idx_to_mesh.append(child)
 
 	
 func get_human_scale() -> float:
