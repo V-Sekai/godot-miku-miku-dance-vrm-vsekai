@@ -855,20 +855,8 @@ func import_scene(path: String, flags: int, bake_fps: int, use_tmp: bool = false
 
 	return root_node
 
-func _convert_sql_to_material_param(column_name: String, value):
-	if "color" in column_name:
-		pass
-	return value
-
 func _to_dict(columns: Array, values: Array):
 	var dict : Dictionary = {}
 	for i in range(columns.size()):
 		dict[columns[i]] = values[i]
-	return dict
-
-func _to_material_param_dict(columns: Array, values: Array):
-	var dict : Dictionary = {}
-	print("Col size=" + str(columns.size()) + " val size=" + str(values.size()))
-	for i in range(min(columns.size(), values.size())):
-		dict[columns[i]] = _convert_sql_to_material_param(columns[i], values[i])
 	return dict
