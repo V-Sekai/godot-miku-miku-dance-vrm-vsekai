@@ -171,8 +171,6 @@ mode = 0
 access = 2
 filters = PoolStringArray( "*.vrm ; VRM" )
 show_hidden_files = true
-current_dir = "/chibifire/motion"
-current_path = "/chibifire/motion/"
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -192,8 +190,6 @@ mode = 1
 access = 2
 filters = PoolStringArray( "*.vmd ; VMD" )
 show_hidden_files = true
-current_dir = "/chibifire/motion"
-current_path = "/chibifire/motion/"
 __meta__ = {
 "_edit_use_anchors_": false
 }

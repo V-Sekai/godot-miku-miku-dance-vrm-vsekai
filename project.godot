@@ -136,7 +136,7 @@ convert_text_resources_to_binary_on_export=true
 
 [editor_plugins]
 
-enabled=PoolStringArray( "res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/holoplay/plugin.cfg", "res://addons/miku_motion_bake/plugin.cfg", "res://addons/vmd_motion/plugin.cfg", "res://addons/vrm/plugin.cfg" )
+enabled=PoolStringArray( "res://addons/Godot-MToon-Shader/plugin.cfg", "res://addons/miku_motion_bake/plugin.cfg", "res://addons/vmd_motion/plugin.cfg" )
 
 [gui]
 

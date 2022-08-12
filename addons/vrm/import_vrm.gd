@@ -28,5 +28,5 @@ func import_animation_from_other_importer(path: String, flags: int, bake_fps: in
 	return self._import_animation(path, flags, bake_fps)
 
 
-func import_scene_from_other_importer(path: String, flags: int, bake_fps: int):
+func import_scene_from_other_importer(path: String, flags, bake_fps: int, compress_flags: int) -> Node:
 	return self._import_scene(path, flags, bake_fps)
