@@ -1,8 +1,13 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=3 uid="uid://oud5k5ene78x"]
 
-[ext_resource path="res://addons/miku_motion_bake/runtime/VMDBake.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://addons/miku_motion_bake/runtime/VMDBake.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://cq63ap7m1jj1k" path="res://demo_vrms/4490707391186690073.vrm" id="2_l40ab"]
 
-[node name="Spatial" type="Spatial"]
-script = ExtResource( 1 )
-motion_path = "res://demo_vmd/Pronama_motion/melt.vmd"
-model_path = "res://demo_vrms/4490707391186690073.vrm"
+[node name="Node3D" type="Node3D"]
+
+[node name="4490707391186690073" parent="." instance=ExtResource("2_l40ab")]
+script = ExtResource("1")
+motion_path = "res://demo_vrms/4490707391186690073.vrm"
+model_path = "res://demo_vmd/Pronama_motion/melt.vmd"
+
+[editable path="4490707391186690073"]

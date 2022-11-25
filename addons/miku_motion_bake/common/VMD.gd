@@ -1,4 +1,4 @@
-extends Reference
+extends RefCounted
 
 class_name VMD
 		
@@ -9,7 +9,7 @@ class BoneKeyframe:
 		var Y: VMDUtilsBake.BezierInterpolator
 		var Z: VMDUtilsBake.BezierInterpolator
 		var rotation: VMDUtilsBake.BezierInterpolator
-		func _init(_X: VMDUtilsBake.BezierInterpolator, _Y: VMDUtilsBake.BezierInterpolator, _Z: VMDUtilsBake.BezierInterpolator, _rotation: VMDUtilsBake.BezierInterpolator):
+		func _init(_X: VMDUtilsBake.BezierInterpolator,_Y: VMDUtilsBake.BezierInterpolator,_Z: VMDUtilsBake.BezierInterpolator,_rotation: VMDUtilsBake.BezierInterpolator):
 			X = _X
 			Y = _Y
 			Z = _Z
@@ -18,7 +18,7 @@ class BoneKeyframe:
 	var name: String
 	var frame_number: int
 	var position: Vector3
-	var rotation: Quat
+	var rotation: Quaternion
 	var interp: BoneInterp
 	
 	func read(file: File):
@@ -130,7 +130,7 @@ func read(file: File) -> int:
 		bk.read(file)
 		bone_keyframes.append(bk)
 
-	if file.get_position() == file.get_len():
+	if file.get_position() == file.get_length():
 		return OK
 		
 	var face_frame_count = VMDUtilsBake.unsigned32_to_signed(file.get_32())
@@ -139,7 +139,7 @@ func read(file: File) -> int:
 		fk.read(file)
 		face_keyframes.append(fk)
 	
-	if file.get_position() == file.get_len():
+	if file.get_position() == file.get_length():
 		return OK
 		
 	var camera_frame_count = VMDUtilsBake.unsigned32_to_signed(file.get_32())
@@ -148,7 +148,7 @@ func read(file: File) -> int:
 		ck.read(file)
 		camera_keyframes.append(ck)
 		
-	if file.get_position() == file.get_len():
+	if file.get_position() == file.get_length():
 		return OK
 		
 	var light_frame_count = VMDUtilsBake.unsigned32_to_signed(file.get_32())
@@ -157,7 +157,7 @@ func read(file: File) -> int:
 		lk.read(file)
 		light_keyframes.append(lk)
 		
-	if file.get_position() == file.get_len():
+	if file.get_position() == file.get_length():
 		return OK
 		
 	var self_shadow_frame_count = VMDUtilsBake.unsigned32_to_signed(file.get_32())

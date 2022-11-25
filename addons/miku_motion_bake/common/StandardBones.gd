@@ -169,7 +169,7 @@ class StandardBone:
 	var source#: String
 	var target#: String
 
-	func _init(_name: int, _parent, _source, _target):
+	func _init(_name: int,_parent,_source,_target):
 		name = _name
 		parent = _parent
 		source = _source
@@ -185,7 +185,7 @@ class RotAdd:
 	var source: int
 	var minus: bool
 	
-	func _init(_target: int, _source: int, _minus := false):
+	func _init(_target: int,_source: int,_minus := false):
 		target = _target
 		source = _source
 		minus = _minus
@@ -198,7 +198,7 @@ class LimbIK:
 	var target_1: int
 	var target_2: int
 	
-	func _init(_source: int, _target_0: int, _target_1: int, _target_2: int):
+	func _init(_source: int,_target_0: int,_target_1: int,_target_2: int):
 		source = _source
 		target_0 = _target_0
 		target_1 = _target_1
@@ -212,7 +212,7 @@ class LookAt:
 	var target_0: int
 	var target_1: int
 	
-	func _init(_source_0, _source_1, _target_0, _target_1):
+	func _init(_source_0,_source_1,_target_0,_target_1):
 		source_0 = _source_0
 		source_1 = _source_1
 		target_0 = _target_0

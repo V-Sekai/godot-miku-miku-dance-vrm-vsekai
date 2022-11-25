@@ -1,6 +1,6 @@
-extends Spatial
+extends Node3D
 
-onready var camera: Spatial = get_node("Spatial/Camera")
+@onready var camera: Node3D = get_node("Node3D/Camera3D")
 
 func _process(delta) -> void:
 	if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
@@ -36,5 +36,5 @@ func _input(event):
 			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		if event is InputEventMouseMotion:
-			rotate_y(-event.relative.x * deg2rad(10.0) * get_process_delta_time())
-			$Spatial.rotate_x(-event.relative.y * deg2rad(10.0) * get_process_delta_time())
+			rotate_y(-event.relative.x * deg_to_rad(10.0) * get_process_delta_time())
+			$Node3D.rotate_x(-event.relative.y * deg_to_rad(10.0) * get_process_delta_time())

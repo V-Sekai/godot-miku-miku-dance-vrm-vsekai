@@ -2,39 +2,39 @@ class_name VMDSkeletonBake
 
 class VMDSkelBone:
 	var name: int
-	var node: Spatial
+	var node: Node3D
 	var local_position_0: Vector3
 
 	var target = null
 	var target_position: Vector3
-	var target_rotation: Quat
+	var target_rotation: Quaternion
 
-	var skeleton: Skeleton
+	var skeleton: Skeleton3D
 
 	var ik_enabled: bool
 	var target_bone_skel_i: int
 
-	func _init(_name: int, parent_node: Spatial, source, _target, skel: Skeleton, _target_bone_skel_i: int):
+	func _init(_name: int,parent_node: Node3D,source,_target,skel: Skeleton3D,_target_bone_skel_i: int):
 		name = _name
 		skeleton = skel
 		target_bone_skel_i = _target_bone_skel_i
 
-		node = Spatial.new()
+		node = Node3D.new()
 		node.name = StandardBones.get_bone_name(name)
 		parent_node.add_child(node)
 
-		if source is Transform:
+		if source is Transform3D:
 			node.global_transform.origin = source.origin
 		local_position_0 = node.transform.origin
 
-		if _target is Transform:
+		if _target is Transform3D:
 			target = _target
-			target_position = node.global_transform.xform_inv(target.origin)
-			target_rotation = node.global_transform.basis.get_rotation_quat().inverse() * target.basis.get_rotation_quat()
+			target_position = target.origin * node.global_transform
+			target_rotation = node.global_transform.basis.get_rotation_quaternion().inverse() * target.basis.get_rotation_quaternion()
 	func apply_target():
 		if target != null:
-			target.origin = node.global_transform.xform(target_position)
-			target.basis = Basis(node.global_transform.basis.get_rotation_quat() * target_rotation)
+			target.origin = node.global_transform * target_position
+			target.basis = Basis(node.global_transform.basis.get_rotation_quaternion() * target_rotation)
 			update_pose()
 	func update_pose():
 		if skeleton == null:
@@ -43,14 +43,14 @@ class VMDSkelBone:
 			return
 		skeleton.set_bone_global_pose_override(target_bone_skel_i, target, 1.0, true)
 
-var root: Spatial
+var root: Node3D
 var bones = []
 
 class VMDSkelBonePlaceHolder:
 	pass
 
-func _init(animator: VRMAnimatorBake, root_override = null, source_overrides := {}):
-	root = Spatial.new()
+func _init(animator: VRMAnimatorBake,root_override = null,source_overrides := {}):
+	root = Node3D.new()
 	var skel := animator.skeleton
 	if not root_override:
 		skel.add_child(root)
@@ -104,23 +104,23 @@ func apply_constraints(apply_ik = true, apply_ikq = false):
 			else:
 				target.transform.basis = source.transform.basis * target.transform.basis
 		elif constraint is StandardBones.LimbIK:
-			var upper_leg = bones[constraint.target_0].node as Spatial
-			var lower_leg = bones[constraint.target_1].node as Spatial
-			var foot = bones[constraint.target_2].node as Spatial
+			var upper_leg = bones[constraint.target_0].node as Node3D
+			var lower_leg = bones[constraint.target_1].node as Node3D
+			var foot = bones[constraint.target_2].node as Node3D
 			var foot_ik = bones[constraint.source] as VMDSkelBone
 
 			if not foot_ik.ik_enabled:
 				continue
-			var local_target := upper_leg.global_transform.xform_inv(foot_ik.node.global_transform.origin) as Vector3
+			var local_target := foot_ik.node.global_transform.origin * upper_leg.global_transform as Vector3
 			var bend := -calc_bend(lower_leg.transform.origin, foot.transform.origin, local_target.length())
-			lower_leg.transform.basis = Basis(Quat(sin(bend/2.0), 0, 0, cos(bend/2.0)))
-			var upper_leg_local_rot := upper_leg.transform.basis.get_rotation_quat() as Quat
-			var from = upper_leg.global_transform.xform_inv(foot.global_transform.origin)
+			lower_leg.transform.basis = Basis(Quaternion(sin(bend/2.0), 0, 0, cos(bend/2.0)))
+			var upper_leg_local_rot := upper_leg.transform.basis.get_rotation_quaternion() as Quaternion
+			var from = foot.global_transform.origin * upper_leg.global_transform
 			var to = local_target
-			upper_leg.transform.basis = Basis(upper_leg.transform.basis.get_rotation_quat() * quat_from_to_rotation(from, to))
+			upper_leg.transform.basis = Basis(upper_leg.transform.basis.get_rotation_quaternion() * quat_from_to_rotation(from, to))
 		elif constraint is StandardBones.LookAt:
-			var foot = bones[constraint.target_0].node as Spatial
-			var toe = bones[constraint.target_1].node as Spatial
+			var foot = bones[constraint.target_0].node as Node3D
+			var toe = bones[constraint.target_1].node as Node3D
 			var foot_ik = null if not constraint.source_0 else bones[constraint.source_0]
 			var toe_ik = null if not constraint.source_1 else bones[constraint.source_1]
 
@@ -129,7 +129,7 @@ func apply_constraints(apply_ik = true, apply_ikq = false):
 			if foot_ik != null and apply_ikq:
 				foot.global_transform.basis = foot_ik.node.global_transform.basis
 			if toe_ik.ik_enabled:
-				var basis : Basis = quat_from_to_rotation(toe.transform.origin, foot.global_transform.xform_inv(toe_ik.node.global_transform.origin))
+				var basis : Basis = quat_from_to_rotation(toe.transform.origin, toe_ik.node.global_transform.origin * foot.global_transform)
 				foot.global_transform.basis *= basis
 
 
@@ -140,20 +140,20 @@ static func calc_bend(v0: Vector3, v1: Vector3, dist: float) -> float:
 		u1 = Vector2(u0.x*u1.x + u0.y*u1.y, u0.x*u1.y - u1.x*u0.y);
 		return max(0.0, acos(clamp(dot/u1.length(), -1, 1)) - atan2(u1.y, u1.x));
 
-func quat_from_to_rotation(from: Vector3, to: Vector3) -> Quat:
+func quat_from_to_rotation(from: Vector3, to: Vector3) -> Quaternion:
 	from = from.normalized()
 	to = to.normalized()
-	var q = Quat()
+	var q = Quaternion()
 	var d = from.dot(to)
 	if d >= 1.0:
-		return Quat.IDENTITY
+		return Quaternion.IDENTITY
 	elif d < (1.0e-6 - 1.0):
 		var axis = Vector3.RIGHT.cross(from)
 		if axis.length_squared() < (1e-06 * 1e-06):
 			axis = Vector3.UP.cross(from)
 		q.set_axis_angle(axis.normalized(), PI)
 	else:
-		q = Quat.IDENTITY
+		q = Quaternion.IDENTITY
 		var s := sqrt((1.0+d) * 2.0)
 		var invs := 1.0 / s
 		var c := from.cross(to)

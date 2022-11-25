@@ -1,23 +1,23 @@
-extends Spatial
+extends Node3D
 
 class_name VMDPlayerBake
 
 const FPS := 30.0
 
-export(String, FILE, "*.vmd") var starting_file_path: String
-export var animator_path: NodePath
-onready var camera: Camera
-onready var animator: VRMAnimatorBake = get_node(animator_path)
-export var anim_scale := 0.08
-export var mirror = false
-export var locomotion_scale = Vector3.ONE
-export var manual_update_time = false
-export var enable_ik = true
-export var enable_ikq = false
-export var enable_shape = true
+@export var starting_file_path: String # (String, FILE, "*.vmd")
+@export var animator_path: NodePath
+@onready var camera: Camera3D
+@onready var animator: VRMAnimatorBake = get_node(animator_path)
+@export var anim_scale := 0.08
+@export var mirror = false
+@export var locomotion_scale = Vector3.ONE
+@export var manual_update_time = false
+@export var enable_ik = true
+@export var enable_ikq = false
+@export var enable_shape = true
 
 var start_time: int
-var scale_overrides = PoolRealArray()
+var scale_overrides = PackedFloat32Array()
 var time = 0.0
 var motion: MotionBake
 var bone_curves = []
@@ -28,8 +28,7 @@ var first_frame_number: int
 var max_frame: int
 
 func vmd_from_file(path: String):
-	var f = File.new()
-	f.open(path, File.READ)
+	var f = FileAccess.open(path, FileAccess.READ)
 	var vmd = VMD.new()
 	vmd.read(f)
 	return vmd
@@ -58,19 +57,19 @@ func load_motions(motion_paths: Array):
 	
 	max_frame = motion.get_max_frame()
 	print_debug("Duration: %.2f s (%d frames)" % [max_frame / FPS, max_frame])
-	var bone_frames_str = PoolStringArray()
+	var bone_frames_str = PackedStringArray()
 	bone_frames_str.resize(motion.bones.size())
 	for i in motion.bones.size():
 		var curve = motion.bones.values()[i] as MotionBake.BoneCurve
 		bone_frames_str.set(i, "%s (%d)" % [motion.bones.keys()[i], curve.keyframes.size()])
-#	print_debug("Bone frames: ", bone_frames_str.join(", "))
+#	print_debug("Bone frames: ", ", ".join(bone_frames_str))
 	
-	var face_frames_str = PoolStringArray()
+	var face_frames_str = PackedStringArray()
 	face_frames_str.resize(motion.faces.size())
 	for i in motion.faces.size():
 		var curve = motion.faces.values()[i] as MotionBake.FaceCurve
 		face_frames_str.set(i, "%s (%d)" % [motion.faces.keys()[i], curve.keyframes.size()])
-#	print_debug("Face frames: ", face_frames_str.join(", "))
+#	print_debug("Face frames: ", ", ".join(face_frames_str))
 	
 	first_frame_number = 0
 	for bone_i in [StandardBones.get_bone_i("全ての親"), StandardBones.get_bone_i("全ての親"), StandardBones.get_bone_i("全ての親")]:
@@ -92,7 +91,7 @@ func load_motions(motion_paths: Array):
 		var ik_count = 0
 		for i in range(curve.keyframes.size()):
 			var keyframe = curve.keyframes[i] as VMD.BoneKeyframe
-			if keyframe.rotation != Quat.IDENTITY:
+			if keyframe.rotation != Quaternion.IDENTITY:
 				ik_count += 1
 		if ik_count > 1:
 			ik_qframes[bone_i] = ik_count
@@ -123,42 +122,41 @@ func load_motions(motion_paths: Array):
 	
 	if motion:
 		set_process(true)
-		start_time = OS.get_ticks_msec()
+		start_time = Time.get_ticks_msec()
 		if camera:
 			camera.queue_free()
 		if motion.camera.keyframes.size() > 0:
-			camera = Camera.new()
+			camera = Camera3D.new()
 			animator.add_child(camera)
 			camera.make_current()
 		
 func _ready():
 	animator = get_node(animator_path)
 	set_process(false)
-	if not starting_file_path.empty():
+	if not starting_file_path.is_empty():
 		load_motions([starting_file_path])
 
 
 func save_motion(basename):
 	var animation_bone_rest = Animation.new()
-	
 	for bone_id in animator.skeleton.get_bone_count():
 		var track_i = animation_bone_rest.get_track_count()
 		var path = str(animator.skeleton.get_owner().get_path_to(animator.skeleton)) + ":" + animator.skeleton.get_bone_name(bone_id)
 		var rest_bone = animator.rest_bones[path]
-		animation_bone_rest.add_track(Animation.TYPE_TRANSFORM)
+		animation_bone_rest.add_track(Animation.TYPE_TRANSFORM3D)
 		animation_bone_rest.track_set_path(track_i, path)
 		if rest_bone == null:
-			animation_bone_rest.transform_track_insert_key(track_i, 0, Vector3(), Quat(), Vector3(1.0, 1.0, 1.0))
+			animation_bone_rest.transform_track_insert_key(track_i, 0, Vector3(), Quaternion(), Vector3(1.0, 1.0, 1.0))
 		var rot = rest_bone["rest_delta"]
 		var loc = rest_bone["loc"]
-		animation_bone_rest.transform_track_insert_key(track_i, 0, -loc, rot.get_rotation_quat().inverse(), 
+		animation_bone_rest.transform_track_insert_key(track_i, 0, -loc, rot.get_rotation_quaternion().inverse(), 
 			Vector3(1, 1, 1) + (rot.get_scale() - Vector3(1, 1, 1)))
 	var new_anims : Dictionary
 	new_anims["RESET"] = animation_bone_rest
 	var animation = Animation.new()
 	for bone_id in animator.skeleton.get_bone_count():
 		var track_i = animation.get_track_count()
-		animation.add_track(Animation.TYPE_TRANSFORM)
+		animation.add_track(Animation.TYPE_TRANSFORM3D)
 		var path = str(animator.skeleton.get_owner().get_path_to(animator.skeleton)) + ":" + animator.skeleton.get_bone_name(bone_id)
 		animation.track_set_path(track_i, path)
 	
@@ -172,7 +170,7 @@ func save_motion(basename):
 				continue
 			if not morph_bake.shapes.has(key):
 				continue
-			var mesh := animator.mesh_idx_to_mesh[bind.mesh] as MeshInstance
+			var mesh := animator.mesh_idx_to_mesh[bind.mesh] as MeshInstance3D
 			var path = str(animator.skeleton.get_owner().get_path_to(mesh)) + ":" + "blend_shapes/Morph_%d" % [bind.index]
 			var track_i = animation.get_track_count()
 			if track_i == -1:
@@ -187,26 +185,26 @@ func save_motion(basename):
 		
 		for vmd_bone_id in vmd_skeleton.bones.size():
 			var target = StandardBones.bones[vmd_bone_id].target
-			var rest_new : Transform
+			var rest_new : Transform3D
 			if target == null:
 				continue
 			var bone_id = animator.find_humanoid_bone(target)	
 			var bone = vmd_skeleton.bones[vmd_bone_id]
-			var vmd_xform : Transform = animator.skeleton.get_bone_global_pose(bone_id)
+			var vmd_xform : Transform3D = animator.skeleton.get_bone_global_pose(bone_id)
 			
 			var bone_size : int = animator.skeleton.get_bone_count()
 			if bone_id >= bone_size:
 				continue
 			var parent : int = animator.skeleton.get_bone_parent(bone_id)
-			var local_pose : Transform
+			var local_pose : Transform3D
 			if parent >= 0:
-				var conversion_transform : Transform = animator.skeleton.get_bone_global_pose(parent) * animator.skeleton.get_bone_rest(bone_id)
+				var conversion_transform : Transform3D = animator.skeleton.get_bone_global_pose(parent) * animator.skeleton.get_bone_rest(bone_id)
 				local_pose = conversion_transform.affine_inverse() * vmd_xform;
 			else:
 				local_pose = vmd_xform
 			
 			var new_loc : Vector3 = local_pose.origin
-			var new_rot : Quat = local_pose.basis.get_rotation_quat()
+			var new_rot : Quaternion = local_pose.basis.get_rotation_quaternion()
 			var new_scale : Vector3 = local_pose.basis.get_scale()
 			animation.transform_track_insert_key(bone_id, frame_i / FPS, new_loc, new_rot, new_scale)
 
@@ -220,9 +218,9 @@ func save_motion(basename):
 					continue
 				if not morph_bake.shapes.has(key):
 					continue
-				var mesh := animator.mesh_idx_to_mesh[bind.mesh] as MeshInstance
+				var mesh := animator.mesh_idx_to_mesh[bind.mesh] as MeshInstance3D
 				var path = str(animator.skeleton.get_owner().get_path_to(mesh)) + ":" + "blend_shapes/Morph_%d" % [bind.index]
-				var track_i = animation.find_track(path)
+				var track_i = animation.find_track(NodePath(path), Animation.TYPE_BLEND_SHAPE)
 				if track_i == -1:
 					continue		
 				var shape = morph_bake.shapes[key]					
@@ -255,7 +253,7 @@ func apply_camera_frame(frame: float):
 	frame = max(frame, 0.0)
 	var camera_sample = motion.camera.sample(frame) as MotionBake.CameraCurve.CameraSampleResult
 	var target_pos = camera_sample.position * 0.07
-	var quat = Quat.IDENTITY
+	var quat = Quaternion.IDENTITY
 	var rot = camera_sample.rotation
 	quat.set_euler(rot)
 	var camera_pos = target_pos

@@ -1,17 +1,26 @@
-extends Spatial
+extends Node3D
 
-var import_vrm_path : String= "res://addons/vrm/import_vrm.gd"
-export(String, FILE) var motion_path
-export(String, FILE) var model_path
+@export_file var motion_path
+@export_file var model_path
+
+const gltf_document_extension_class = preload("res://addons/vrm/vrm_extension.gd")
 
 func _ready():
 	var vmd_player: VMDPlayerBake
 	var animator: VRMAnimatorBake
-	var VRMImport = load(import_vrm_path)
-	var model_instance: Spatial
-	var vrm_loader = load("res://addons/vrm/vrm_loader.gd").new()
-	model_instance = vrm_loader.import_scene(model_path, 1, 1000)
-	model_instance.rotate_y(deg2rad(180))
+	var model_instance: Node3D
+	
+	
+	var gltf : GLTFDocument = GLTFDocument.new()
+	var extension : GLTFDocumentExtension = gltf_document_extension_class.new()
+	gltf.register_gltf_document_extension(extension)
+	var state : GLTFState = GLTFState.new()
+	var bake_fps = 30
+	var err = gltf.append_from_file(model_path, state, 1, bake_fps)
+	if err != OK:
+		return null
+	model_instance = gltf.generate_scene(state, bake_fps)
+	model_instance.rotate_y(deg_to_rad(180))
 	animator = VRMAnimatorBake.new()
 	vmd_player = VMDPlayerBake.new()
 	animator.add_child(model_instance)
@@ -25,11 +34,12 @@ func _ready():
 		var anims : Dictionary = vmd_player.save_motion(path.get_file().get_basename())
 		var new_animation_player : AnimationPlayer= model_instance.get_node("anim")
 		for key_i in anims.keys():
-			new_animation_player.add_animation(key_i, anims[key_i])
-		var convert_gltf2 = PackedSceneGLTF.new()
+			new_animation_player.add_animation_library(key_i, anims[key_i])
+		var gltf_document : GLTFDocument = GLTFDocument.new()
+		var gltf_state : GLTFState = GLTFState.new()
 		var filename : String = "user://%s_%s.glb" % [model_path.get_file().get_basename(), path.get_file().get_basename()]
-		convert_gltf2.export_gltf(model_instance, filename, 0, 30.0)
-
+		gltf_document.append_from_scene(model_instance, gltf_state, 0, 30)
+		gltf_document.write_to_filesystem(gltf_state, filename)
 
 func _process(_delta):
 	get_tree().quit(0)
