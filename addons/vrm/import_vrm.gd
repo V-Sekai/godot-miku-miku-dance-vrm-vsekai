@@ -1,23 +1,38 @@
 @tool
 extends EditorSceneFormatImporter
 
-const gltf_document_extension_class = preload("res://addons/vrm/vrm_extension.gd")
+const gltf_document_extension_class = preload("./vrm_extension.gd")
+
+
+func _get_importer_name() -> String:
+	return "Godot-VRM"
+
+
+func _get_recognized_extensions() -> Array:
+	return ["vrm"]
+
 
 func _get_extensions() -> PackedStringArray:
-	var exts : PackedStringArray
+	var exts: PackedStringArray
 	exts.push_back("vrm")
 	return exts
 
-func _get_import_flags() -> int:
-	return EditorSceneFormatImporter.IMPORT_SCENE
 
-func _import_scene(path: String, flags: int, options: Dictionary, bake_fps: int) -> Object:
-	var gltf : GLTFDocument = GLTFDocument.new()
-	var extension : GLTFDocumentExtension = gltf_document_extension_class.new()
-	gltf.register_gltf_document_extension(extension)
-	var state : GLTFState = GLTFState.new()
-	var err = gltf.append_from_file(path, state, flags, bake_fps)
+func _get_import_flags() -> int:
+	return IMPORT_SCENE
+
+
+func _import_scene(path: String, flags: int, options: Dictionary) -> Object:
+	var gltf: GLTFDocument = GLTFDocument.new()
+	flags |= EditorSceneFormatImporter.IMPORT_USE_NAMED_SKIN_BINDS
+	var vrm_extension: GLTFDocumentExtension = gltf_document_extension_class.new()
+	gltf.register_gltf_document_extension(vrm_extension, true)
+	var state: GLTFState = GLTFState.new()
+	state.handle_binary_image = GLTFState.HANDLE_BINARY_EMBED_AS_BASISU
+	var err = gltf.append_from_file(path, state, flags)
 	if err != OK:
+		gltf.unregister_gltf_document_extension(vrm_extension)
 		return null
-	var generated_scene = gltf.generate_scene(state, bake_fps)
+	var generated_scene = gltf.generate_scene(state)
+	gltf.unregister_gltf_document_extension(vrm_extension)
 	return generated_scene

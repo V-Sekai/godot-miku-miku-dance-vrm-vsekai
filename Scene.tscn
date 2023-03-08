@@ -70,7 +70,7 @@ grow_vertical = 2
 script = ExtResource("5")
 
 [node name="Panel" type="Panel" parent="Control"]
-anchors_preset = 1
+layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -315.0
@@ -80,42 +80,34 @@ offset_bottom = 129.0
 grow_horizontal = 0
 
 [node name="MarginContainer" type="MarginContainer" parent="Control/Panel"]
-anchors_preset = 15
+layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel/MarginContainer"]
-offset_right = 294.0
-offset_bottom = 113.0
+layout_mode = 2
 
 [node name="Button" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer"]
-offset_right = 294.0
-offset_bottom = 31.0
+layout_mode = 2
 text = "Load VRM..."
 
 [node name="Button2" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer"]
-offset_top = 35.0
-offset_right = 294.0
-offset_bottom = 66.0
+layout_mode = 2
 text = "Load Motion VMD"
 
 [node name="HSlider" type="HSlider" parent="Control/Panel/MarginContainer/VBoxContainer"]
-offset_top = 70.0
-offset_right = 294.0
-offset_bottom = 86.0
+layout_mode = 2
 size_flags_vertical = 10
 
 [node name="Label" type="Label" parent="Control/Panel/MarginContainer/VBoxContainer"]
-offset_top = 90.0
-offset_right = 294.0
-offset_bottom = 113.0
+layout_mode = 2
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Control"]
 
 [node name="Label" type="Label" parent="Control"]
-anchors_preset = 2
+layout_mode = 0
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 26.8701

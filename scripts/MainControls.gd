@@ -36,11 +36,10 @@ func instance_model() -> void:
 	var extension : GLTFDocumentExtension = gltf_document_extension_class.new()
 	gltf.register_gltf_document_extension(extension, true)
 	var state : GLTFState = GLTFState.new()
-	var bake_fps = 30
-	var err = gltf.append_from_file(_copy_user(model_path), state, 1, bake_fps)
+	var err = gltf.append_from_file(_copy_user(model_path), state, 1)
 	if err != OK:
-		return null
-	var model_instance = gltf.generate_scene(state, bake_fps)	
+		return
+	var model_instance = gltf.generate_scene(state)	
 	if animator:
 		animator.queue_free()
 		animator = null
