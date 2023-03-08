@@ -1,201 +1,159 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=10 format=3 uid="uid://bgc3kg8tnbbjj"]
 
-[ext_resource path="res://demo_env/grid-blue.png" type="Texture" id=1]
-[ext_resource path="res://demo_env/hilly_terrain_01_4k.exr" type="Texture" id=2]
-[ext_resource path="res://scripts/camera.gd" type="Script" id=4]
-[ext_resource path="res://scripts/MainControls.gd" type="Script" id=5]
+[ext_resource type="Script" path="res://scripts/camera.gd" id="4"]
+[ext_resource type="Script" path="res://scripts/MainControls.gd" id="5"]
 
-[sub_resource type="SpatialMaterial" id=1]
-albedo_texture = ExtResource( 1 )
+[sub_resource type="Gradient" id="1"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="2"]
+gradient = SubResource("1")
+
+[sub_resource type="StandardMaterial3D" id="3"]
+albedo_texture = SubResource("2")
 uv1_triplanar = true
 
-[sub_resource type="PlaneMesh" id=2]
-material = SubResource( 1 )
-size = Vector2( 10, 10 )
+[sub_resource type="PlaneMesh" id="4"]
+material = SubResource("3")
+size = Vector2(10, 10)
 
-[sub_resource type="PanoramaSky" id=3]
-panorama = ExtResource( 2 )
+[sub_resource type="Sky" id="5"]
 
-[sub_resource type="Environment" id=4]
-background_mode = 2
-background_sky = SubResource( 3 )
-ambient_light_color = Color( 0.49, 0.49, 0.49, 1 )
-ambient_light_energy = 0.6
-ambient_light_sky_contribution = 0.36
-tonemap_mode = 2
-tonemap_white = 3.19
-ssao_enabled = true
-glow_enabled = true
-glow_bloom = 0.02
-glow_blend_mode = 1
-glow_bicubic_upscale = true
+[sub_resource type="Environment" id="6"]
+background_mode = 3
+background_color = Color(0.843137, 0.827451, 0.776471, 1)
+sky = SubResource("5")
+sky_rotation = Vector3(0, -2.41737, 0)
+ambient_light_color = Color(0.49, 0.49, 0.49, 1)
+ambient_light_energy = 0.01
+tonemap_mode = 4
+glow_intensity = 1.0
 
-[node name="Spatial" type="Spatial"]
+[sub_resource type="LabelSettings" id="LabelSettings_w5cnh"]
+outline_size = 2
+outline_color = Color(0, 0.113725, 0.0509804, 1)
 
-[node name="MeshInstance" type="MeshInstance" parent="."]
-mesh = SubResource( 2 )
-material/0 = null
+[node name="Node3D" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("4")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource( 4 )
+environment = SubResource("6")
 
-[node name="DirectionalLight" type="DirectionalLight" parent="."]
-transform = Transform( 0.212911, -0.780995, -0.587125, 0.897283, -0.0815475, 0.433858, -0.38672, -0.619191, 0.683411, 0.343577, 2.31051, -0.292323 )
-light_color = Color( 1, 0.905882, 0.72549, 1 )
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.212911, -0.780995, -0.587125, 0.897283, -0.0815475, 0.433858, -0.38672, -0.619191, 0.683411, 0.343577, 2.31051, -0.292323)
+light_color = Color(1, 0.905882, 0.72549, 1)
 light_energy = 0.875
 shadow_enabled = true
 
-[node name="Spatial" type="Spatial" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02458, 0 )
-script = ExtResource( 4 )
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02458, 0)
+script = ExtResource("4")
 
-[node name="Spatial" type="Spatial" parent="Spatial"]
+[node name="Node3D" type="Node3D" parent="Node3D"]
 
-[node name="Camera" type="Spatial" parent="Spatial/Spatial"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.958655 )
+[node name="Camera3D" type="Node3D" parent="Node3D/Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.958655)
 
-[node name="Camera" type="InterpolatedCamera" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.318, 1.95414 )
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.318, 1.95414)
 current = true
-target = NodePath("../Spatial/Spatial/Camera")
-speed = 10.0
-enabled = true
 
 [node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-script = ExtResource( 5 )
-__meta__ = {
-"_edit_use_anchors_": false
-}
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("5")
+
+[node name="Panel" type="Panel" parent="Control"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -315.0
+offset_top = 19.0
+offset_right = -21.0
+offset_bottom = 129.0
+grow_horizontal = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel/MarginContainer"]
+offset_right = 294.0
+offset_bottom = 113.0
+
+[node name="Button" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer"]
+offset_right = 294.0
+offset_bottom = 31.0
+text = "Load VRM..."
+
+[node name="Button2" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer"]
+offset_top = 35.0
+offset_right = 294.0
+offset_bottom = 66.0
+text = "Load Motion VMD"
+
+[node name="HSlider" type="HSlider" parent="Control/Panel/MarginContainer/VBoxContainer"]
+offset_top = 70.0
+offset_right = 294.0
+offset_bottom = 86.0
+size_flags_vertical = 10
+
+[node name="Label" type="Label" parent="Control/Panel/MarginContainer/VBoxContainer"]
+offset_top = 90.0
+offset_right = 294.0
+offset_bottom = 113.0
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Control"]
 
 [node name="Label" type="Label" parent="Control"]
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-margin_left = 26.8701
-margin_top = -116.339
-margin_right = 198.87
-margin_bottom = -34.3389
+offset_left = 26.8701
+offset_top = -242.339
+offset_right = 259.87
+offset_bottom = -34.3389
+grow_vertical = 0
 text = "Controls:
 W/A = Forwards/Backwards
 E/Q = Up/Down
 Mouse = Orbit
-H = Toggle UI"
-__meta__ = {
-"_edit_use_anchors_": false
-}
+H = Toggle UI
 
-[node name="Panel" type="Panel" parent="Control"]
-anchor_left = 1.0
-anchor_right = 1.0
-margin_left = -315.0
-margin_top = 19.0
-margin_right = -21.0
-margin_bottom = 129.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="MarginContainer" type="MarginContainer" parent="Control/Panel"]
-anchor_right = 1.0
-anchor_bottom = 1.0
-custom_constants/margin_right = 5
-custom_constants/margin_top = 5
-custom_constants/margin_left = 5
-custom_constants/margin_bottom = 5
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/Panel/MarginContainer"]
-margin_left = 5.0
-margin_top = 5.0
-margin_right = 289.0
-margin_bottom = 105.0
-
-[node name="Button" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer"]
-margin_right = 284.0
-margin_bottom = 20.0
-text = "Load VRM..."
-
-[node name="Button2" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer"]
-margin_top = 24.0
-margin_right = 284.0
-margin_bottom = 44.0
-text = "Load Motion VMD"
-
-[node name="HSlider" type="HSlider" parent="Control/Panel/MarginContainer/VBoxContainer"]
-margin_top = 66.0
-margin_right = 284.0
-margin_bottom = 82.0
-size_flags_vertical = 10
-
-[node name="Label" type="Label" parent="Control/Panel/MarginContainer/VBoxContainer"]
-margin_top = 86.0
-margin_right = 284.0
-margin_bottom = 100.0
-align = 1
-
-[node name="Label2" type="Label" parent="Control"]
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-margin_top = -14.0
-text = "Project Heartbeat Laboratorio"
-align = 2
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Control"]
+V-Sekai
+Project Heartbeat Laboratorio"
+label_settings = SubResource("LabelSettings_w5cnh")
 
 [node name="VRMOpenFileDialog" type="FileDialog" parent="."]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -298.0
-margin_top = -163.0
-margin_right = 298.0
-margin_bottom = 163.0
-window_title = "Abrir un Archivo"
-mode = 0
+title = "Open a File"
+ok_button_text = "Open"
+file_mode = 0
 access = 2
-filters = PoolStringArray( "*.vrm ; VRM" )
+filters = PackedStringArray("*.vrm ; VRM")
 show_hidden_files = true
-current_dir = "/home/eirexe/VMDMotionTest"
-current_path = "/home/eirexe/VMDMotionTest/"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
 [node name="VMDOpenFileDialog" type="FileDialog" parent="."]
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-margin_left = -298.0
-margin_top = -163.0
-margin_right = 298.0
-margin_bottom = 163.0
-window_title = "Abrir Archivo(s)"
+title = "Open File(s)"
 mode = 1
+ok_button_text = "Open"
+file_mode = 1
 access = 2
-filters = PoolStringArray( "*.vmd ; VMD" )
+filters = PackedStringArray("*.vmd ; VMD")
 show_hidden_files = true
-current_dir = "/home/eirexe/VMDMotionTest"
-current_path = "/home/eirexe/VMDMotionTest/"
-__meta__ = {
-"_edit_use_anchors_": false
-}
 
-[node name="4490707391186690073" parent="." instance_placeholder="res://demo_vrms/4490707391186690073.vrm"]
-transform = Transform( -1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0 )
+[node name="Marker3D" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.625, 0.8, -0.108)
 
-[node name="Position3D" type="Position3D" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.625, 0.8, -0.108 )
-
-[connection signal="pressed" from="Control/Panel/MarginContainer/VBoxContainer/Button" to="VRMOpenFileDialog" method="popup_centered_ratio" binds= [ 0.75 ]]
-[connection signal="pressed" from="Control/Panel/MarginContainer/VBoxContainer/Button2" to="VMDOpenFileDialog" method="popup_centered_ratio" binds= [ 0.75 ]]
+[connection signal="pressed" from="Control/Panel/MarginContainer/VBoxContainer/Button" to="VRMOpenFileDialog" method="popup_centered_ratio" binds= [0.75]]
+[connection signal="pressed" from="Control/Panel/MarginContainer/VBoxContainer/Button2" to="VMDOpenFileDialog" method="popup_centered_ratio" binds= [0.75]]
 [connection signal="file_selected" from="VRMOpenFileDialog" to="Control" method="_on_VRMOpenFileDialog_file_selected"]
 [connection signal="files_selected" from="VMDOpenFileDialog" to="Control" method="_on_VMDOpenFileDialog_files_selected"]
