@@ -1,4 +1,4 @@
-extends Reference
+extends RefCounted
 
 class_name VMD
 		
@@ -18,10 +18,10 @@ class BoneKeyframe:
 	var name: String
 	var frame_number: int
 	var position: Vector3
-	var rotation: Quat
+	var rotation: Quaternion
 	var interp: BoneInterp
 	
-	func read(file: File):
+	func read(file: FileAccess):
 		name = VMDUtils.read_string(file, 15)
 		frame_number = VMDUtils.unsigned32_to_signed(file.get_32())
 		position = VMDUtils.read_vector3(file)
@@ -36,7 +36,7 @@ class FaceKeyframe:
 	var frame_number: int
 	var weight: float
 	
-	func read(file: File):
+	func read(file: FileAccess):
 		name = VMDUtils.read_string(file, 15)
 		frame_number = file.get_32()
 		weight = file.get_float()
@@ -57,7 +57,7 @@ class CameraKeyframe:
 	var angle: float
 	var perspective: bool
 	
-	func read(file: File):
+	func read(file: FileAccess):
 		frame_number = VMDUtils.unsigned32_to_signed(file.get_32())
 		distance = file.get_float()
 		position = VMDUtils.read_vector3(file)
@@ -76,7 +76,7 @@ class LightKeyframe:
 	var light_color: Color
 	var position: Vector3
 	
-	func read(file: File):
+	func read(file: FileAccess):
 		frame_number = VMDUtils.unsigned32_to_signed(file.get_32())
 		light_color = Color(file.get_float(), file.get_float(), file.get_float(), 1.0)
 		position = VMDUtils.read_vector3(file)
@@ -86,7 +86,7 @@ class SelfShadowKeyframe:
 	var type: int
 	var distance: float
 	
-	func read(file: File):
+	func read(file: FileAccess):
 		frame_number = VMDUtils.unsigned32_to_signed(file.get_32())
 		type = file.get_8()
 		distance = file.get_float()
@@ -96,7 +96,7 @@ class IKKeyframe:
 	var display: bool
 	var ik_enable: Dictionary
 
-	func read(file: File):
+	func read(file: FileAccess):
 		frame_number = VMDUtils.unsigned32_to_signed(file.get_32())
 		display = bool(file.get_8())
 		var ik_enable_count = VMDUtils.unsigned32_to_signed(file.get_32())
@@ -114,7 +114,7 @@ var light_keyframes: Array = []
 var self_shadow_keyframes: Array = []
 var ik_keyframes: Array = []
 
-func read(file: File) -> int:
+func read(file: FileAccess) -> int:
 	version = VMDUtils.read_string(file, 30)
 	name = VMDUtils.read_string(file, 20)
 
@@ -130,7 +130,7 @@ func read(file: File) -> int:
 		bk.read(file)
 		bone_keyframes.append(bk)
 
-	if file.get_position() == file.get_len():
+	if file.get_position() == file.get_length():
 		return OK
 		
 	var face_frame_count = VMDUtils.unsigned32_to_signed(file.get_32())
@@ -139,7 +139,7 @@ func read(file: File) -> int:
 		fk.read(file)
 		face_keyframes.append(fk)
 	
-	if file.get_position() == file.get_len():
+	if file.get_position() == file.get_length():
 		return OK
 		
 	var camera_frame_count = VMDUtils.unsigned32_to_signed(file.get_32())
@@ -148,7 +148,7 @@ func read(file: File) -> int:
 		ck.read(file)
 		camera_keyframes.append(ck)
 		
-	if file.get_position() == file.get_len():
+	if file.get_position() == file.get_length():
 		return OK
 		
 	var light_frame_count = VMDUtils.unsigned32_to_signed(file.get_32())
@@ -157,7 +157,7 @@ func read(file: File) -> int:
 		lk.read(file)
 		light_keyframes.append(lk)
 		
-	if file.get_position() == file.get_len():
+	if file.get_position() == file.get_length():
 		return OK
 		
 	var self_shadow_frame_count = VMDUtils.unsigned32_to_signed(file.get_32())

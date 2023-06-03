@@ -3,6 +3,11 @@
 [ext_resource type="Script" path="res://scripts/camera.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/MainControls.gd" id="5"]
 
+[sub_resource type="LabelSettings" id="LabelSettings_w5cnh"]
+font_color = Color(0.898039, 0.913725, 0.862745, 1)
+outline_size = 2
+outline_color = Color(0, 0.113725, 0.0509804, 1)
+
 [sub_resource type="Gradient" id="1"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
 
@@ -29,36 +34,8 @@ ambient_light_energy = 0.01
 tonemap_mode = 4
 glow_intensity = 1.0
 
-[sub_resource type="LabelSettings" id="LabelSettings_w5cnh"]
-outline_size = 2
-outline_color = Color(0, 0.113725, 0.0509804, 1)
-
 [node name="Node3D" type="Node3D"]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-mesh = SubResource("4")
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("6")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.212911, -0.780995, -0.587125, 0.897283, -0.0815475, 0.433858, -0.38672, -0.619191, 0.683411, 0.343577, 2.31051, -0.292323)
-light_color = Color(1, 0.905882, 0.72549, 1)
-light_energy = 0.875
-shadow_enabled = true
-
-[node name="Node3D" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02458, 0)
-script = ExtResource("4")
-
-[node name="Node3D" type="Node3D" parent="Node3D"]
-
-[node name="Camera3D" type="Node3D" parent="Node3D/Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.958655)
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.318, 1.95414)
-current = true
+transform = Transform3D(-1, 0, 1.22465e-16, 0, 1, 0, -1.22465e-16, 0, -1, 0, 0, 0)
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
@@ -67,6 +44,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.993454, 1)
 script = ExtResource("5")
 
 [node name="Panel" type="Panel" parent="Control"]
@@ -106,14 +84,23 @@ layout_mode = 2
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Control"]
 
+[node name="ColorRect" type="ColorRect" parent="Control"]
+offset_left = 16.1054
+offset_top = 13.0
+offset_right = 56.1054
+offset_bottom = 53.0
+scale = Vector2(7.81354, 5.83736)
+color = Color(0.129412, 0.129412, 0.129412, 1)
+
 [node name="Label" type="Label" parent="Control"]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 26.8701
-offset_top = -242.339
-offset_right = 259.87
-offset_bottom = -34.3389
+offset_left = 32.9755
+offset_top = -624.339
+offset_right = 265.976
+offset_bottom = -416.339
 grow_vertical = 0
 text = "Controls:
 W/A = Forwards/Backwards
@@ -124,6 +111,31 @@ H = Toggle UI
 V-Sekai
 Project Heartbeat Laboratorio"
 label_settings = SubResource("LabelSettings_w5cnh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("4")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("6")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.212911, -0.780995, -0.587125, 0.897283, -0.0815475, 0.433858, -0.38672, -0.619191, 0.683411, 0.343577, 2.31051, -0.292323)
+light_color = Color(1, 0.905882, 0.72549, 1)
+light_energy = 0.875
+shadow_enabled = true
+
+[node name="Node3D" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02458, 0)
+script = ExtResource("4")
+
+[node name="Node3D" type="Node3D" parent="Node3D"]
+
+[node name="Camera3D" type="Node3D" parent="Node3D/Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.958655)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.318, 1.95414)
+current = true
 
 [node name="VRMOpenFileDialog" type="FileDialog" parent="."]
 title = "Open a File"

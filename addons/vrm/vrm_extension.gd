@@ -140,6 +140,8 @@ func rotate_scene_180_inner(p_node: Node3D, mesh_set: Dictionary, skin_set: Dict
 		mesh_set[p_node.mesh] = true
 		skin_set[p_node.skin] = true
 	for child in p_node.get_children():
+		if not child is Node3D:
+			continue
 		rotate_scene_180_inner(child, mesh_set, skin_set)
 
 

@@ -1,11 +1,11 @@
-extends Reference
+extends RefCounted
 
 class_name Motion
 
 class BoneCurve:
 	class BoneSampleResult:
 		var position: Vector3
-		var rotation: Quat
+		var rotation: Quaternion
 	var keyframes: Array
 	
 	var _bin_split_frame_number: float
@@ -20,7 +20,7 @@ class BoneCurve:
 		var out := VMDUtils.binary_split(keyframes, _bin_split_frame_number, self, "binary_split_pred")
 		var last_frame_num := 0
 		var last_position := Vector3.ZERO
-		var last_rotation := Quat.IDENTITY
+		var last_rotation := Quaternion.IDENTITY
 		
 		var next_frame = out.get("first_true", null) as VMD.BoneKeyframe
 		
@@ -60,7 +60,7 @@ class BoneCurve:
 			A2 += w * p.z * p
 			B += w * b * p
 			
-		var trf = Transform(Basis(A0, A1, A2), Vector3.ZERO)
+		var trf = Transform3D(Basis(A0, A1, A2), Vector3.ZERO)
 		return trf.inverse() * B
 		
 class FaceCurve:
@@ -139,7 +139,7 @@ class CameraCurve:
 			result.position.x = lerp(last_position.x, next_frame.position.x, x)
 			result.position.y = lerp(last_position.y, next_frame.position.y, y)
 			result.position.z = lerp(last_position.z, next_frame.position.z, z)
-			result.rotation = last_rotation.linear_interpolate(next_frame.rotation, r)
+			result.rotation = last_rotation.lerp(next_frame.rotation, r)
 			result.angle = lerp(last_angle, next_frame.angle, a)
 			result.distance = lerp(last_distance, next_frame.distance, d)
 		return result
@@ -210,12 +210,12 @@ func sort_camera(a: VMD.CameraKeyframe, b: VMD.CameraKeyframe):
 func process():
 	for i in range(bones.size()):
 		var curve = bones.values()[i] as BoneCurve
-		curve.keyframes.sort_custom(self, "sort_bones")
+		curve.keyframes.sort_custom(Callable(self, "sort_bones"))
 	for i in range(faces.size()):
 		var curve = faces.values()[i] as FaceCurve
-		curve.keyframes.sort_custom(self, "sort_faces")
-	ik.keyframes.sort_custom(self, "sort_ik")
-	camera.keyframes.sort_custom(self, "sort_camera")
+		curve.keyframes.sort_custom(Callable(self, "sort_faces"))
+	ik.keyframes.sort_custom(Callable(self, "sort_ik"))
+	camera.keyframes.sort_custom(Callable(self, "sort_camera"))
 
 func get_max_frame() -> int:
 	var max_frame = 0

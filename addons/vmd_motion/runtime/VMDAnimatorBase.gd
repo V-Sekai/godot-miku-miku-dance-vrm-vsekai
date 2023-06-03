@@ -1,8 +1,8 @@
-extends Spatial
+extends Node3D
 
 class_name VMDAnimatorBase
 
-var skeleton: Skeleton
+var skeleton: Skeleton3D
 
 func find_humanoid_bone(bone: String) -> int:
 	return -1

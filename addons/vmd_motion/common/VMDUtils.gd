@@ -1,7 +1,7 @@
 class_name VMDUtils
 
-static func sj2utf(input: PoolByteArray) -> PoolByteArray:
-	var output = PoolByteArray()
+static func sj2utf(input: PackedByteArray) -> PackedByteArray:
+	var output = PackedByteArray()
 	output.resize(input.size()*3)
 	
 	var index_input = 0
@@ -50,10 +50,10 @@ static func sj2utf(input: PoolByteArray) -> PoolByteArray:
 	output.resize(index_output)
 	return output
 
-static func trim_end(source: PoolByteArray, to_trim: int) -> PoolByteArray:
+static func trim_end(source: PackedByteArray, to_trim: int) -> PackedByteArray:
 	if source.size() > 0:
 		if source[source.size()-1] == to_trim:
-			source.remove(source.size() - 1)
+			source.remove_at(source.size() - 1)
 	return source
 	
 const MAX_31B = 1 << 31
@@ -83,30 +83,30 @@ class BezierInterpolator:
 		return X0 == Y0 and X1 == Y1
 		
 	func _to_string() -> String:
-		return str(Quat(X0, Y0, X1, Y1))
+		return str(Quaternion(X0, Y0, X1, Y1))
 
-static func read_string(file: File, length: int) -> String:
+static func read_string(file: FileAccess, length: int) -> String:
 	var string = file.get_buffer(length)
 	string = sj2utf(string)
 	string = trim_end(string, 0x00)
-	string = trim_end(string, ord("?"))
+	string = trim_end(string, "?".unicode_at(0))
 	string = trim_end(string, 0x00)
 	return string.get_string_from_utf8()
 	
-static func read_vector3(file: File) -> Vector3:
+static func read_vector3(file: FileAccess) -> Vector3:
 	var x = file.get_float()
 	var y = file.get_float()
 	var z = file.get_float()
 	return Vector3(x, y, z)
 
-static func read_quat(file: File) -> Quat:
+static func read_quat(file: FileAccess) -> Quaternion:
 	var x = file.get_float()
 	var y = file.get_float()
 	var z = file.get_float()
 	var w = file.get_float()
-	return Quat(x, y, z, w)
+	return Quaternion(x, y, z, w)
 
-static func read_bezier(file: File, stride: int) -> BezierInterpolator:
+static func read_bezier(file: FileAccess, stride: int) -> BezierInterpolator:
 	var binterp = BezierInterpolator.new()
 	binterp.X0 = file.get_buffer(stride)[0]/127.0
 	binterp.Y0 = file.get_buffer(stride)[0]/127.0
@@ -115,7 +115,7 @@ static func read_bezier(file: File, stride: int) -> BezierInterpolator:
 	return binterp
 
 # Camera frames bezier order is XXYY instead of XYXY
-static func read_bezier_camera(file: File, stride: int) -> BezierInterpolator:
+static func read_bezier_camera(file: FileAccess, stride: int) -> BezierInterpolator:
 	var binterp = BezierInterpolator.new()
 	binterp.X0 = file.get_buffer(stride)[0]/127.0
 	binterp.X1 = file.get_buffer(stride)[0]/127.0
@@ -124,7 +124,7 @@ static func read_bezier_camera(file: File, stride: int) -> BezierInterpolator:
 	return binterp
 
 static func binary_split(list: Array, value, object: Object, func_name: String) -> Dictionary:
-	var i = list.bsearch_custom(value, object, func_name)
+	var i = list.bsearch_custom(value, Callable(object, func_name))
 	var result = {}
 	
 	if i < list.size():
@@ -133,9 +133,9 @@ static func binary_split(list: Array, value, object: Object, func_name: String) 
 		result["last_false"] = list[i-1]
 	return result
 		
-static func get_bone_global_rest(skel: Skeleton, bone_i: int) -> Transform:
+static func get_bone_global_rest(skel: Skeleton3D, bone_i: int) -> Transform3D:
 	if bone_i == -1:
-		return Transform()
+		return Transform3D()
 	var final_transform := skel.get_bone_rest(bone_i)
 	var bone_parent = skel.get_bone_parent(bone_i)
 	while bone_parent != -1:

@@ -1,7 +1,5 @@
 class_name Morph
 
-
-
 var shapes: Dictionary = {}
 var animator: VMDAnimatorBase
 

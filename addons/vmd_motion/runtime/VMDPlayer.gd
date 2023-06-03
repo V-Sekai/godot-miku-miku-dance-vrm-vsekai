@@ -1,23 +1,34 @@
-extends Spatial
+extends Node3D
 
 class_name VMDPlayer
 
 const FPS := 30.0
 
-export(String, FILE, "*.vmd") var starting_file_path: String
-export var animator_path: NodePath
-onready var camera: Camera
-onready var animator: VMDAnimatorBase = get_node(animator_path)
-export var anim_scale := 0.08
-export var mirror = false
-export var locomotion_scale = Vector3.ONE
-export var manual_update_time = false
-export var enable_ik = true
-export var enable_ikq = false
-export var enable_shape = true
+@export_file("*.vmd") 
+var starting_file_path: String
+@export_node_path
+var animator_path: NodePath
+@onready
+var camera: Camera3D
+@onready
+var animator: VMDAnimatorBase = get_node(animator_path)
+@export
+var anim_scale := 0.08
+@export
+var mirror = false
+@export
+var locomotion_scale = Vector3.ONE
+@export
+var manual_update_time = false
+@export
+var enable_ik = true
+@export
+var enable_ikq = false
+@export
+var enable_shape = true
 
 var start_time: int
-var scale_overrides = PoolRealArray()
+var scale_overrides = PackedFloat32Array()
 var time = 0.0
 var motion: Motion
 var bone_curves = []
@@ -28,8 +39,7 @@ var first_frame_number: int
 var max_frame: int
 
 func vmd_from_file(path: String):
-	var f = File.new()
-	f.open(path, File.READ)
+	var f = FileAccess.open(path, FileAccess.READ)
 	var vmd = VMD.new()
 	vmd.read(f)
 	return vmd
@@ -92,7 +102,7 @@ func load_motions(motion_paths: Array):
 		var ik_count = 0
 		for i in range(curve.keyframes.size()):
 			var keyframe = curve.keyframes[i] as VMD.BoneKeyframe
-			if keyframe.rotation != Quat.IDENTITY:
+			if keyframe.rotation != Quaternion.IDENTITY:
 				ik_count += 1
 		if ik_count > 1:
 			ik_qframes[bone_i] = ik_count
@@ -123,23 +133,24 @@ func load_motions(motion_paths: Array):
 	
 	if motion:
 		set_process(true)
-		start_time = OS.get_ticks_msec()
+		start_time = Time.get_ticks_msec()
 		if camera:
 			camera.queue_free()
 		if motion.camera.keyframes.size() > 0:
-			camera = Camera.new()
+			camera = Camera3D.new()
 			animator.add_child(camera)
+			camera.owner = animator.owner
 			camera.make_current()
 		
 func _ready():
 	animator = get_node(animator_path)
 	set_process(false)
-	if not starting_file_path.empty():
+	if not starting_file_path.is_empty():
 		load_motions([starting_file_path])
 
 func _process(delta):
 	if not manual_update_time:
-		time = (OS.get_ticks_msec() - start_time) / 1000.0
+		time = (Time.get_ticks_msec() - start_time) / 1000.0
 	var frame = time * FPS
 	update_frame(frame)
 func update_frame(frame: float):
@@ -166,7 +177,7 @@ func apply_camera_frame(frame: float):
 	frame = max(frame, 0.0)
 	var camera_sample = motion.camera.sample(frame) as Motion.CameraCurve.CameraSampleResult
 	var target_pos = camera_sample.position
-	var quat = Quat.IDENTITY
+	var quat = Quaternion.IDENTITY
 	var rot = camera_sample.rotation
 	quat.set_euler(rot)
 	var camera_pos = target_pos
