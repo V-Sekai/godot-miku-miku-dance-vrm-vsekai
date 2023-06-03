@@ -141,18 +141,22 @@ func load_motions(motion_paths: Array):
 			animator.add_child(camera)
 			camera.owner = animator.owner
 			camera.make_current()
-		
+
+
 func _ready():
 	animator = get_node(animator_path)
 	set_process(false)
 	if not starting_file_path.is_empty():
 		load_motions([starting_file_path])
 
+
 func _process(delta):
 	if not manual_update_time:
 		time = (Time.get_ticks_msec() - start_time) / 1000.0
 	var frame = time * FPS
 	update_frame(frame)
+
+
 func update_frame(frame: float):
 	if enable_shape:
 		apply_face_frame(frame)

@@ -2,6 +2,7 @@ extends RefCounted
 
 class_name Motion
 
+
 class BoneCurve:
 	class BoneSampleResult:
 		var position: Vector3
@@ -62,7 +63,8 @@ class BoneCurve:
 			
 		var trf = Transform3D(Basis(A0, A1, A2), Vector3.ZERO)
 		return trf.inverse() * B
-		
+
+
 class FaceCurve:
 	var keyframes := []
 	
@@ -144,6 +146,7 @@ class CameraCurve:
 			result.distance = lerp(last_distance, next_frame.distance, d)
 		return result
 
+
 class IKCurve:
 	var keyframes := []
 	
@@ -165,12 +168,15 @@ var faces := {}
 var ik := IKCurve.new()
 var camera := CameraCurve.new()
 
+
 func _init(vmds: Array):
 	for i in range(vmds.size()):
 		var vmd = vmds[i] as VMD
 		if vmd:
 			add_clip(vmd)
 	process()
+
+
 func add_clip(vmd: VMD):
 	for i in vmd.bone_keyframes.size():
 		var keyframe = vmd.bone_keyframes[i] as VMD.BoneKeyframe
@@ -189,23 +195,28 @@ func add_clip(vmd: VMD):
 		var keyframe = vmd.camera_keyframes[i] as VMD.CameraKeyframe
 		camera.keyframes.append(keyframe)
 
+
 func sort_bones(a: VMD.BoneKeyframe, b: VMD.BoneKeyframe):
 	if a.frame_number < b.frame_number:
 		return true
 	return false
+
 
 func sort_faces(a: VMD.FaceKeyframe, b: VMD.FaceKeyframe):
 	if a.frame_number < b.frame_number:
 		return true
 	return false
 
+
 func sort_ik(a: VMD.IKKeyframe, b: VMD.IKKeyframe):
 	if a.frame_number < b.frame_number:
 		return true
 	return false
 
+
 func sort_camera(a: VMD.CameraKeyframe, b: VMD.CameraKeyframe):
 	return a.frame_number < b.frame_number
+
 
 func process():
 	for i in range(bones.size()):
@@ -216,6 +227,7 @@ func process():
 		curve.keyframes.sort_custom(Callable(self, "sort_faces"))
 	ik.keyframes.sort_custom(Callable(self, "sort_ik"))
 	camera.keyframes.sort_custom(Callable(self, "sort_camera"))
+
 
 func get_max_frame() -> int:
 	var max_frame = 0
