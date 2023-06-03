@@ -73,12 +73,12 @@ func _init(animator: VMDAnimatorBase, root_override = null, source_overrides := 
 		
 		if template.source:
 			source_bone_skel_i = animator.find_humanoid_bone(template.source)
-			source_transform = VMDUtils.get_bone_global_rest(skel, source_bone_skel_i)
+			source_transform = skel.get_bone_global_rest(source_bone_skel_i)
 		if template.target:
 			target_bone_skel_i = animator.find_humanoid_bone(template.target)
 		
 		var position_transform = source_overrides[template.name] if template.parent in source_overrides else source_transform
-		var target = null if template.target == null else VMDUtils.get_bone_global_rest(skel, target_bone_skel_i)
+		var target = null if template.target == null else skel.get_bone_global_rest(target_bone_skel_i)
 		bones[template.name] = VMDSkelBone.new(template.name, parent_node, position_transform, target, skel, target_bone_skel_i)
 		
 	# TODO: juice this

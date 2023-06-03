@@ -132,14 +132,3 @@ static func binary_split(list: Array, value, object: Object, func_name: String) 
 	if i > 0:
 		result["last_false"] = list[i-1]
 	return result
-		
-static func get_bone_global_rest(skel: Skeleton3D, bone_i: int) -> Transform3D:
-	if bone_i == -1:
-		return Transform3D()
-	var final_transform := skel.get_bone_rest(bone_i)
-	var bone_parent = skel.get_bone_parent(bone_i)
-	while bone_parent != -1:
-		final_transform = skel.get_bone_rest(bone_parent) * final_transform
-		bone_parent = skel.get_bone_parent(bone_parent)
-	return final_transform
-
