@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bgc3kg8tnbbjj"]
+[gd_scene load_steps=8 format=3 uid="uid://bgc3kg8tnbbjj"]
 
 [ext_resource type="Script" path="res://scripts/camera.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/MainControls.gd" id="5"]
@@ -21,18 +21,6 @@ uv1_triplanar = true
 [sub_resource type="PlaneMesh" id="4"]
 material = SubResource("3")
 size = Vector2(10, 10)
-
-[sub_resource type="Sky" id="5"]
-
-[sub_resource type="Environment" id="6"]
-background_mode = 3
-background_color = Color(0.843137, 0.827451, 0.776471, 1)
-sky = SubResource("5")
-sky_rotation = Vector3(0, -2.41737, 0)
-ambient_light_color = Color(0.49, 0.49, 0.49, 1)
-ambient_light_energy = 0.01
-tonemap_mode = 4
-glow_intensity = 1.0
 
 [node name="Node3D" type="Node3D"]
 transform = Transform3D(-1, 0, 1.22465e-16, 0, 1, 0, -1.22465e-16, 0, -1, 0, 0, 0)
@@ -114,9 +102,6 @@ label_settings = SubResource("LabelSettings_w5cnh")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("4")
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("6")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.212911, -0.780995, -0.587125, 0.897283, -0.0815475, 0.433858, -0.38672, -0.619191, 0.683411, 0.343577, 2.31051, -0.292323)
