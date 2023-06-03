@@ -11,7 +11,7 @@ var animator_path: NodePath
 @onready
 var camera: Camera3D
 @onready
-var animator: VMDAnimatorBase = get_node(animator_path)
+var animator: VRMAnimator = get_node(animator_path)
 @export
 var anim_scale := 0.08
 @export
@@ -115,7 +115,7 @@ func load_motions(motion_paths: Array):
 		morph = Morph.new(animator, motion.faces.keys())
 	for bone_i in [StandardBones.get_bone_i("左足ＩＫ"), StandardBones.get_bone_i("左つま先ＩＫ"), 
 					StandardBones.get_bone_i("右足ＩＫ"), StandardBones.get_bone_i("右つま先ＩＫ")]:
-		vmd_skeleton.bones[bone_i].ik_enabled = bone_curves[bone_i].keyframes.size() > 1
+		vmd_skeleton.bones[vmd_skeleton.bones.keys()[bone_i]].ik_enabled = bone_curves[bone_i].keyframes.size() > 1
 	scale_overrides.resize(vmd_skeleton.bones.size())
 	
 	for i in scale_overrides.size():
@@ -123,7 +123,7 @@ func load_motions(motion_paths: Array):
 	
 	for bone_i in [StandardBones.get_bone_i("左つま先ＩＫ"), StandardBones.get_bone_i("右つま先ＩＫ")]:
 		var curve_local_pos_0 := -(bone_curves[bone_i] as Motion.BoneCurve).estimate_rotation_center_from_position()
-		var bone_local_pos_0 := (vmd_skeleton.bones[bone_i] as VMDSkeleton.VMDSkelBone).local_position_0
+		var bone_local_pos_0 := (vmd_skeleton.bones[vmd_skeleton.bones.keys()[bone_i]] as VMDSkeleton.VMDSkelBone).local_position_0
 		print(curve_local_pos_0)
 		if curve_local_pos_0 != Vector3.ZERO:
 			scale_overrides.set(bone_i, bone_local_pos_0.length() / curve_local_pos_0.length())
@@ -192,7 +192,7 @@ func apply_camera_frame(frame: float):
 func apply_bone_frame(frame: float):
 	frame = max(frame, 0.0)
 	for i in range(vmd_skeleton.bones.size()):
-		var bone = vmd_skeleton.bones[i] as VMDSkeleton.VMDSkelBone
+		var bone = vmd_skeleton.bones[vmd_skeleton.bones.keys()[i]] as VMDSkeleton.VMDSkelBone
 		var curve = bone_curves[i] as Motion.BoneCurve
 		var sample_result := curve.sample(frame) as Motion.BoneCurve.BoneSampleResult
 		if not sample_result:
@@ -204,7 +204,9 @@ func apply_bone_frame(frame: float):
 			pos.x *= -1
 			rot.y *= -1
 			rot.z *= -1
-		var scal = scale_overrides[bone.name]
+		var scal: float
+		if bone.name < scale_overrides.size():
+			scal = scale_overrides[bone.name]
 		if scal == 0:
 			scal = anim_scale
 		pos *= scal
@@ -233,6 +235,6 @@ func apply_ik_frame(frame: float):
 		if bone_i != -1:
 			if mirror:
 				bone_i = StandardBones.get_bone_i(StandardBones.MIRROR_BONE_NAMES[i])
-			if vmd_skeleton.bones[bone_i].ik_enabled != enable:
+			if vmd_skeleton.bones[vmd_skeleton.bones.keys()[bone_i]].ik_enabled != enable:
 				print("%s, %s", name, str(enable))
-			vmd_skeleton.bones[bone_i].ik_enabled = enable
+			vmd_skeleton.bones[vmd_skeleton.bones.keys()[bone_i]].ik_enabled = enable

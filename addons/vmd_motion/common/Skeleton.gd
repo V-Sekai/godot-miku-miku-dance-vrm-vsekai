@@ -50,7 +50,7 @@ var root: Node3D
 var bones: Dictionary
 var source_overrides: Array = []
 	
-func _init(animator: VMDAnimatorBase, root_override = null, source_overrides := {}):
+func _init(animator: VRMAnimator, root_override = null, source_overrides := {}):
 	root = Node3D.new()
 	var skel := animator.skeleton
 	if not root_override:
@@ -63,17 +63,17 @@ func _init(animator: VMDAnimatorBase, root_override = null, source_overrides := 
 		var target_bone_name: String
 		if template.target != null:
 			target_bone_name = template.target
-		bones[i] = VMDSkelBone.new(template.name, root_override, template.source,
+		bones[template.parent] = VMDSkelBone.new(template.name, root_override, template.source,
 		target_bone_name, animator.skeleton, animator.skeleton.find_bone(target_bone_name))
-		var parent_node
+		var parent_node: Node3D
 
-		if bones.keys().has(template.parent):
+		if bones[template.parent].node:
 			parent_node = bones[template.parent].node
 		else:
 			parent_node = root
 
-		var source_bone_skel_i = -1
-		var target_bone_skel_i = -1
+		var source_bone_skel_i: int = -1
+		var target_bone_skel_i: int = -1
 
 		var source_transform = null
 
@@ -89,7 +89,7 @@ func _init(animator: VMDAnimatorBase, root_override = null, source_overrides := 
 
 func apply_targets():
 	for i in range(bones.size()):
-		var bone = bones[i] as VMDSkelBone
+		var bone = bones[bones.keys()[i]] as VMDSkelBone
 		bone.apply_target()
 		
 func apply_constraints(apply_ik = true, apply_ikq = false):
@@ -97,8 +97,8 @@ func apply_constraints(apply_ik = true, apply_ikq = false):
 		var constraint = StandardBones.constraints[i] as StandardBones.Constraint
 		
 		if constraint is StandardBones.RotAdd:
-			var target = (bones[constraint.target] as VMDSkelBone).node
-			var source = (bones[constraint.source] as VMDSkelBone).node
+			var target = (bones[bones.keys()[constraint.target]] as VMDSkelBone).node
+			var source = (bones[bones.keys()[constraint.source]] as VMDSkelBone).node
 			
 			if constraint.minus:
 				target.global_transform.basis = source.get_parent().global_transform.basis * source.global_transform.basis.inverse() * target.global_transform.basis
@@ -120,10 +120,10 @@ func apply_constraints(apply_ik = true, apply_ikq = false):
 			var to = local_target
 			upper_leg.transform.basis = Basis(upper_leg.transform.basis.get_rotation_quaternion() * quat_from_to_rotation(from, to))
 		elif constraint is StandardBones.LookAt:
-			var foot = bones[constraint.target_0].node as Node3D
-			var toe = bones[constraint.target_1].node as Node3D
-			var foot_ik = null if not constraint.source_0 else bones[constraint.source_0]
-			var toe_ik = null if not constraint.source_1 else bones[constraint.source_1]
+			var foot = bones[bones.keys()[constraint.target_0]].node as Node3D
+			var toe = bones[bones.keys()[constraint.target_1]].node as Node3D
+			var foot_ik = null if not constraint.source_0 else bones[bones.keys()[constraint.source_0]]
+			var toe_ik = null if not constraint.source_1 else bones[bones.keys()[constraint.source_1]]
 			
 			if foot_ik != null and !foot_ik.ik_enabled:
 				continue

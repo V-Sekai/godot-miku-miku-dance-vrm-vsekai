@@ -1,6 +1,11 @@
-extends VMDAnimatorBase
+extends Node3D 
 
 class_name VRMAnimator
+
+var skeleton: Skeleton3D
+
+func get_human_scale() -> float:
+	return skeleton.get_bone_global_rest(find_humanoid_bone("hips")).origin.y
 
 const MMD_TO_VRM_MORPH = {
 	"まばたき": "blink",
