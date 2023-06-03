@@ -1,6 +1,6 @@
 extends Node3D
 
-@onready var camera: Node3D = get_node("Node3D/Camera3D")
+@onready var camera: Node3D = get_node("Camera3D")
 
 func _process(delta) -> void:
 	if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
