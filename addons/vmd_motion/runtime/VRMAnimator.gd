@@ -30,7 +30,13 @@ func _ready():
 			mesh_idx_to_mesh.append(child)
 
 func find_humanoid_bone(bone_name: String) -> int:
-	return skeleton.find_bone(bone_name)
+	if vrm.vrm_meta and vrm.vrm_meta.humanoid_bone_mapping and StandardBones.get_bone_i(bone_name) != -1:
+		var found_bone_name: String = StandardBones.bone_names.get(bone_name, -1)
+		if found_bone_name.is_empty():
+			return skeleton.find_bone(bone_name)
+		return skeleton.find_bone(found_bone_name)
+	else:
+		return skeleton.find_bone(bone_name)
 
 
 func _insert_bone(p_skeleton : Skeleton3D, bone_name : String, rot : Basis, loc : Vector3, r_rest_bones : Dictionary) -> void:
@@ -55,8 +61,8 @@ func _fetch_reset_animation(p_skel : Skeleton3D, r_rest_bones : Dictionary) -> v
 	for bone in p_skel.get_bone_count():
 		_insert_bone(p_skel, p_skel.get_bone_name(bone), Basis(), Vector3(), r_rest_bones)
 		
-	var right_arm_bone = find_humanoid_bone("rightUpperArm")
-	var left_arm_bone = find_humanoid_bone("leftUpperArm")
+	var right_arm_bone = find_humanoid_bone("RightUpperArm")
+	var left_arm_bone = find_humanoid_bone("LeftUpperArm")
 	_insert_bone(p_skel, p_skel.get_bone_name(right_arm_bone), Basis(Vector3.FORWARD, deg_to_rad(35)), Vector3(), r_rest_bones)
 	_insert_bone(p_skel, p_skel.get_bone_name(left_arm_bone), Basis(Vector3.FORWARD, deg_to_rad(-35)), Vector3(), r_rest_bones)
 
