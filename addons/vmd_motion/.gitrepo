@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/fire/VMDMotionGD.git
+	branch = master
+	commit = 8d25f38ff1ec9c7585002c36da9c97e48b226ee4
+	parent = 75adb3da12ccadc1551408265662f8bd22678f02
+	method = merge
+	cmdver = 0.4.6
