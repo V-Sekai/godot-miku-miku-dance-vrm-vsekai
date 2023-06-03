@@ -1,5 +1,6 @@
 class_name VMDSkeleton
 
+
 class VMDSkelBone:
 	var name: int
 	var node: Node3D
@@ -46,10 +47,8 @@ class VMDSkelBone:
 		skeleton.set_bone_global_pose_override(target_bone_skel_i, target, 1.0, true)
 		
 var root: Node3D
-var bones = []
-	
-class VMDSkelBonePlaceHolder:
-	pass
+var bones: Dictionary
+var source_overrides: Array = []
 	
 func _init(animator: VMDAnimatorBase, root_override = null, source_overrides := {}):
 	root = Node3D.new()
@@ -59,34 +58,34 @@ func _init(animator: VMDAnimatorBase, root_override = null, source_overrides := 
 	else:
 		root_override.add_child(root)
 	root.global_transform.basis.x = Vector3.LEFT
-	for i in range(StandardBones.bone_names.size()):
-		bones.append(VMDSkelBonePlaceHolder.new())
-	
-	
 	for i in range(StandardBones.bones.size()):
 		var template = StandardBones.bones[i] as StandardBones.StandardBone
-		var parent_node = root if not template.parent else bones[template.parent].node
+		var target_bone_name: String
+		if template.target != null:
+			target_bone_name = template.target
+		bones[i] = VMDSkelBone.new(template.name, root_override, template.source,
+		target_bone_name, animator.skeleton, animator.skeleton.find_bone(target_bone_name))
+		var parent_node
+
+		if bones.keys().has(template.parent):
+			parent_node = bones[template.parent].node
+		else:
+			parent_node = root
+
 		var source_bone_skel_i = -1
 		var target_bone_skel_i = -1
-	
+
 		var source_transform = null
-		
+
 		if template.source:
 			source_bone_skel_i = animator.find_humanoid_bone(template.source)
+			if source_bone_skel_i == -1:
+				print_debug("Cannot pose bone %s" % template.source)
+				continue
 			source_transform = skel.get_bone_global_rest(source_bone_skel_i)
 		if template.target:
 			target_bone_skel_i = animator.find_humanoid_bone(template.target)
-		
-		var position_transform = source_overrides[template.name] if template.parent in source_overrides else source_transform
-		var target = null if template.target == null else skel.get_bone_global_rest(target_bone_skel_i)
-		bones[template.name] = VMDSkelBone.new(template.name, parent_node, position_transform, target, skel, target_bone_skel_i)
-		
-	# TODO: juice this
-	
-	for i in range(bones.size()):
-		var bone = bones[i]
-		if bone is VMDSkelBonePlaceHolder:
-			bones[i] = VMDSkelBone.new(i, root, null, null, skel, animator.find_humanoid_bone(StandardBones.bones[i].target))
+
 
 func apply_targets():
 	for i in range(bones.size()):

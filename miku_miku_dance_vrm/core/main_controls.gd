@@ -1,7 +1,7 @@
 extends Control
 
 var model_path: String = "res://demo_vrms/4490707391186690073.vrm"
-var motion_paths: Array = []
+var motion_paths: Array = ["res://miku_miku_dance_vrm/art/demo_vmd/pronama_motion/melt.vmd"]
 var vmd_player: VMDPlayer
 var animator: VRMAnimator
 var max_frame: int
@@ -68,7 +68,7 @@ func _on_time_changed_by_user(value: float) -> void:
 	
 func instance_motion() -> void:
 	if motion_paths.size() > 0:
-		assert(vmd_player) #,"VMD player must exist")
+		assert(vmd_player)
 		vmd_player.load_motions(motion_paths)
 		max_frame = vmd_player.max_frame
 

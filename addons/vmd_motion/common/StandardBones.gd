@@ -68,7 +68,7 @@ func _init():
 		StandardBone.new(get_bone_i("首"), get_bone_i("上半身2"), "Neck", "Neck"),
 		StandardBone.new(get_bone_i("頭"), get_bone_i("首"), "Head", "Head"),
 		StandardBone.new(get_bone_i("両目"), get_bone_i("頭"), null, null),
-		StandardBone.new(get_bone_i("左目"), get_bone_i("頭"), "LeftEyes", "LeftEye"),
+		StandardBone.new(get_bone_i("左目"), get_bone_i("頭"), "LeftEye", "LeftEye"),
 		StandardBone.new(get_bone_i("右目"), get_bone_i("頭"), "RightEye", "RightEye"),
 		
 		StandardBone.new(get_bone_i("左肩P"), get_bone_i("上半身2"), "LeftShoulder", null),

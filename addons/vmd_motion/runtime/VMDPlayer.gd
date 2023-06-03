@@ -111,8 +111,6 @@ func load_motions(motion_paths: Array):
 	if not vmd_skeleton:
 		print("scale suggestion: %.2f" % [0.07*animator.get_human_scale()])
 		anim_scale = 0.07*animator.get_human_scale()
-		# TODO: this
-		#var source_overrides = {}
 		vmd_skeleton = VMDSkeleton.new(animator, self)
 		morph = Morph.new(animator, motion.faces.keys())
 	for bone_i in [StandardBones.get_bone_i("左足ＩＫ"), StandardBones.get_bone_i("左つま先ＩＫ"), 
