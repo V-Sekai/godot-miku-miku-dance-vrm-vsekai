@@ -23,7 +23,6 @@ material = SubResource("3")
 size = Vector2(10, 10)
 
 [node name="Node3D" type="Node3D"]
-transform = Transform3D(-1, 0, 1.22465e-16, 0, 1, 0, -1.22465e-16, 0, -1, 0, 0, 0)
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
@@ -70,8 +69,6 @@ size_flags_vertical = 10
 [node name="Label" type="Label" parent="Control/Panel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Control"]
-
 [node name="ColorRect" type="ColorRect" parent="Control"]
 layout_mode = 0
 offset_left = 16.1054
@@ -114,13 +111,8 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02458, 0)
 script = ExtResource("2_1uvpu")
 
-[node name="Node3D" type="Node3D" parent="Node3D"]
-
-[node name="Camera3D" type="Node3D" parent="Node3D/Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.958655)
-
-[node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.318, 1.95414)
+[node name="Camera3D" type="Camera3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29342, 1.95414)
 current = true
 
 [node name="VRMOpenFileDialog" type="FileDialog" parent="."]
