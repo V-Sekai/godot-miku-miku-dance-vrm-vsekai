@@ -1,0 +1,13 @@
+[gd_resource type="Environment" load_steps=4 format=3 uid="uid://cohk0i4if8314"]
+
+[ext_resource type="Texture2D" uid="uid://bayu4anh7y8af" path="res://miku_miku_dance_vrm/art/studio_small_02_4k.exr" id="1_rh1ve"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_d7qoy"]
+panorama = ExtResource("1_rh1ve")
+
+[sub_resource type="Sky" id="Sky_fh30p"]
+sky_material = SubResource("PanoramaSkyMaterial_d7qoy")
+
+[resource]
+sky = SubResource("Sky_fh30p")
+ambient_light_source = 3

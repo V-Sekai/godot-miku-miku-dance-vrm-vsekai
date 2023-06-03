@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cq63ap7m1jj1k"
-path="res://.godot/imported/4490707391186690073.vrm-906cfef315dfbd283a3bfe50a29a6a8e.scn"
+path="res://.godot/imported/4490707391186690073.vrm-b2d86937471cae13f2c48394a37bad55.scn"
 
 [deps]
 
-source_file="res://demo_vrms/4490707391186690073.vrm"
-dest_files=["res://.godot/imported/4490707391186690073.vrm-906cfef315dfbd283a3bfe50a29a6a8e.scn"]
+source_file="res://miku_miku_dance_vrm/art/demo_vrms/4490707391186690073.vrm"
+dest_files=["res://.godot/imported/4490707391186690073.vrm-b2d86937471cae13f2c48394a37bad55.scn"]
 
 [params]
 

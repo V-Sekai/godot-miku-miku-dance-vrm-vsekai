@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://bgc3kg8tnbbjj"]
 
-[ext_resource type="Script" path="res://scripts/camera.gd" id="4"]
-[ext_resource type="Script" path="res://scripts/MainControls.gd" id="5"]
+[ext_resource type="Script" path="res://miku_miku_dance_vrm/core/main_controls.gd" id="1_i6ne6"]
+[ext_resource type="Script" path="res://miku_miku_dance_vrm/core/camera.gd" id="2_1uvpu"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_w5cnh"]
 font_color = Color(0.898039, 0.913725, 0.862745, 1)
@@ -33,7 +33,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.993454, 1)
-script = ExtResource("5")
+script = ExtResource("1_i6ne6")
 
 [node name="Panel" type="Panel" parent="Control"]
 layout_mode = 0
@@ -73,6 +73,7 @@ layout_mode = 2
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="Control"]
 
 [node name="ColorRect" type="ColorRect" parent="Control"]
+layout_mode = 0
 offset_left = 16.1054
 offset_top = 13.0
 offset_right = 56.1054
@@ -111,7 +112,7 @@ shadow_enabled = true
 
 [node name="Node3D" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02458, 0)
-script = ExtResource("4")
+script = ExtResource("2_1uvpu")
 
 [node name="Node3D" type="Node3D" parent="Node3D"]
 
