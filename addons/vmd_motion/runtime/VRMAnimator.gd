@@ -26,13 +26,23 @@ func _ready():
 	assert(get_child_count() > 0, "Must have a VRMTopLevel as the only child")
 	assert(get_child(0) is VRMTopLevel, "Must have a VRMTopLevel as the only child")
 	vrm = get_child(0)
-	skeleton = vrm.get_node(vrm.vrm_skeleton) as Skeleton3D
+	skeleton = find_skeleton(vrm)
+	assert(skeleton, "VRMTopLevel must contain a Skeleton3D")
 	var rest_bones : Dictionary
 	_fetch_reset_animation(skeleton, rest_bones)	
 	_fix_skeleton(skeleton, rest_bones)
 	for child in skeleton.get_children():
 		if child is MeshInstance3D:
 			mesh_idx_to_mesh.append(child)
+
+func find_skeleton(node: Node) -> Skeleton3D:
+	for child in node.get_children():
+		if child is Skeleton3D:
+			return child
+		var found = find_skeleton(child)
+		if found:
+			return found
+	return null
 
 func find_humanoid_bone(bone_name: String) -> int:
 	if vrm.vrm_meta and vrm.vrm_meta.humanoid_bone_mapping and StandardBones.get_bone_i(bone_name) != -1:
@@ -115,4 +125,3 @@ func set_blend_shape_value(blend_shape_name: String, value: float):
 				var weight = 0.99999 * float(bind.weight) / 100.0
 				var mesh := mesh_idx_to_mesh[bind.mesh] as MeshInstance3D
 				mesh.set("blend_shapes/morph_%d" % [bind.index], value * weight)
-		

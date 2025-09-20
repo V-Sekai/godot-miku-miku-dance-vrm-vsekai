@@ -1,6 +1,6 @@
 extends Control
 
-var model_path: String = "res://demo_vrms/4490707391186690073.vrm"
+var model_path: String = "res://miku_miku_dance_vrm/art/demo_vrms/4490707391186690073.vrm"
 var motion_paths: Array = ["res://miku_miku_dance_vrm/art/demo_vmd/pronama_motion/melt.vmd"]
 var vmd_player: VMDPlayer
 var animator: VRMAnimator
@@ -26,7 +26,6 @@ func _ready() -> void:
 	call_deferred("instance_model")
 # warning-ignore:return_value_discarded
 	h_slider.connect("value_changed",Callable(self,"_on_time_changed_by_user"))
-	call_deferred("_on_VMDOpenFileDialog_files_selected", motion_paths)
 
 
 func instance_model() -> void:
@@ -56,15 +55,19 @@ func instance_model() -> void:
 	root.add_child(animator)
 	vmd_player.animator_path = animator.get_path()
 	root.add_child(vmd_player)
+	if motion_paths.size() > 0:
+		instance_motion()
 
 func _process(_delta) -> void:
-	h_slider.set_block_signals(true)
-	h_slider.max_value = vmd_player.max_frame / 30.0
-	h_slider.value = (Time.get_ticks_msec() - vmd_player.start_time) / 1000.0
-	h_slider.set_block_signals(false)
+	if vmd_player:
+		h_slider.set_block_signals(true)
+		h_slider.max_value = vmd_player.max_frame / 30.0
+		h_slider.value = (Time.get_ticks_msec() - vmd_player.start_time) / 1000.0
+		h_slider.set_block_signals(false)
 	
 func _on_time_changed_by_user(value: float) -> void:
-	vmd_player.start_time = int(Time.get_ticks_msec() - value * 1000.0)
+	if vmd_player:
+		vmd_player.start_time = int(Time.get_ticks_msec() - value * 1000.0)
 	
 func instance_motion() -> void:
 	if motion_paths.size() > 0:
@@ -75,9 +78,7 @@ func instance_motion() -> void:
 func _on_VRMOpenFileDialog_file_selected(path: String):
 	model_path = path
 	instance_model()
-	instance_motion()
 	
 func _on_VMDOpenFileDialog_files_selected(paths) -> void:
 	motion_paths = paths
 	instance_model()
-	instance_motion()
