@@ -28,7 +28,6 @@ var enable_ikq = false
 var enable_shape = true
 
 var start_time: int
-var scale_overrides = PackedFloat32Array()
 var time = 0.0
 var motion: Motion
 var bone_curves = []
@@ -117,21 +116,9 @@ func load_motions(motion_paths: Array):
 		anim_scale = 0.07*animator.get_human_scale()
 		vmd_skeleton = VMDSkeleton.new(animator, self)
 		morph = Morph.new(animator, motion.faces.keys())
-	for bone_i in [StandardBones.get_bone_i("左足ＩＫ"), StandardBones.get_bone_i("左つま先ＩＫ"), 
+	for bone_i in [StandardBones.get_bone_i("左足ＩＫ"), StandardBones.get_bone_i("左つま先ＩＫ"),
 					StandardBones.get_bone_i("右足ＩＫ"), StandardBones.get_bone_i("右つま先ＩＫ")]:
 		vmd_skeleton.bones[vmd_skeleton.bones.keys()[bone_i]].ik_enabled = bone_curves[bone_i].keyframes.size() > 1
-	scale_overrides.resize(vmd_skeleton.bones.size())
-	
-	for i in scale_overrides.size():
-		scale_overrides.set(i, 0.0)
-	
-	for bone_i in [StandardBones.get_bone_i("左つま先ＩＫ"), StandardBones.get_bone_i("右つま先ＩＫ")]:
-		var curve_local_pos_0 := -(bone_curves[bone_i] as Motion.BoneCurve).estimate_rotation_center_from_position()
-		var bone_local_pos_0 := (vmd_skeleton.bones[vmd_skeleton.bones.keys()[bone_i]] as VMDSkeleton.VMDSkelBone).local_position_0
-		print(curve_local_pos_0)
-		if curve_local_pos_0 != Vector3.ZERO:
-			scale_overrides.set(bone_i, bone_local_pos_0.length() / curve_local_pos_0.length())
-			print("override scale %s (%.4f)" % [StandardBones.get_bone_name(bone_i), scale_overrides[bone_i]])
 	
 	if motion:
 		set_process(true)
@@ -215,20 +202,23 @@ func apply_bone_frame(frame: float):
 		var pos := sample_result.position
 		var rot = sample_result.rotation
 
+		# Debug: Log raw VMD data for first few bones
+		if i < 5 and int(frame) % 30 == 0:  # Log every second
+			print("DEBUG VMD Raw - Bone ", StandardBones.get_bone_name(bone.name), " Pos: ", pos, " Rot: ", rot)
+
 		if mirror:
 			pos.x *= -1
 			rot.y *= -1
 			rot.z *= -1
-		var scal: float
-		if bone.name < scale_overrides.size():
-			scal = scale_overrides[bone.name]
-		if scal == 0:
-			scal = anim_scale
-		pos *= scal
+		pos *= anim_scale
 
 		if bone.name == StandardBones.get_bone_i("全ての親") or bone.name == StandardBones.get_bone_i("センター") \
 				or StandardBones.get_bone_i("左足ＩＫ") or bone.name == StandardBones.get_bone_i("右足ＩＫ"):
 			pos *= locomotion_scale
+
+		# Debug: Log processed position
+		if i < 5 and int(frame) % 30 == 0:
+			print("DEBUG VMD Processed - Bone ", StandardBones.get_bone_name(bone.name), " Pos: ", pos, " Rot: ", rot)
 
 		bone.node.transform.origin = pos + bone.local_position_0
 		bone.node.transform.basis = Basis(rot)

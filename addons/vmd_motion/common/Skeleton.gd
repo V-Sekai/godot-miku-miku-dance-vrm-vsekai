@@ -58,10 +58,20 @@ class VMDSkelBone:
 			var parent_global = skeleton.get_bone_global_pose(parent_bone)
 			local_transform = parent_global.affine_inverse() * target
 
+		# Debug: Log computed local transform for first few bones
+		var bone_name = skeleton.get_bone_name(target_bone_skel_i)
+		if target_bone_skel_i < 5:
+			print("DEBUG Local Transform - Bone ", target_bone_skel_i, " (", bone_name, ") Local Pos: ", local_transform.origin, " Local Rot: ", local_transform.basis.get_rotation_quaternion())
+
 		# Set local pose
 		skeleton.set_bone_pose_position(target_bone_skel_i, local_transform.origin)
 		skeleton.set_bone_pose_rotation(target_bone_skel_i, local_transform.basis.get_rotation_quaternion())
 		skeleton.set_bone_pose_scale(target_bone_skel_i, local_transform.basis.get_scale())
+
+		# Debug: Log final global position
+		if target_bone_skel_i < 5:
+			var final_global = skeleton.get_bone_global_pose(target_bone_skel_i)
+			print("DEBUG Final Global - Bone ", target_bone_skel_i, " (", bone_name, ") Global Pos: ", final_global.origin, " Global Rot: ", final_global.basis.get_rotation_quaternion())
 		
 var root: Node3D
 var bones: Dictionary
