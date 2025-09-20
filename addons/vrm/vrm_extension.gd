@@ -940,6 +940,16 @@ func _import_post(gstate: GLTFState, node: Node) -> Error:
 
 	skeleton.set_meta("vrm_pose_diffs", pose_diffs)
 
+	# Fix hips rest pose Y to ensure get_human_scale() returns non-zero value
+	var hips_bone_name = humanBones.get_skeleton_bone_name("Hips")
+	var hips_idx = skeleton.find_bone(hips_bone_name)
+	if hips_idx != -1:
+		var rest = skeleton.get_bone_rest(hips_idx)
+		if rest.origin.y == 0.0:
+			rest.origin.y = 1.0
+			skeleton.set_bone_rest(hips_idx, rest)
+			print("Fixed hips rest pose Y to 1.0 for proper VMD animation scaling")
+
 	_update_materials(vrm_extension, gstate)
 	_first_person_head_hiding(vrm_extension, gstate, human_bone_to_idx)
 

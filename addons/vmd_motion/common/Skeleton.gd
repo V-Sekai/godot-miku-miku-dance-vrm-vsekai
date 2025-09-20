@@ -30,7 +30,13 @@ class VMDSkelBone:
 			node.global_transform.origin = source.origin
 		local_position_0 = node.transform.origin
 		
-		if _target is Transform3D:
+		if _target is String:
+			var bone_idx = skeleton.find_bone(_target)
+			if bone_idx != -1:
+				target = skeleton.get_bone_global_rest(bone_idx)
+				target_position = node.global_transform.affine_inverse() * target.origin
+				target_rotation = node.global_transform.basis.get_rotation_quaternion().inverse() * target.basis.get_rotation_quaternion()
+		elif _target is Transform3D:
 			target = _target
 			target_position = node.global_transform.affine_inverse() * target.origin
 			target_rotation = node.global_transform.basis.get_rotation_quaternion().inverse() * target.basis.get_rotation_quaternion()
@@ -44,7 +50,18 @@ class VMDSkelBone:
 			return
 		if target_bone_skel_i == -1:
 			return
-		skeleton.set_bone_global_pose_override(target_bone_skel_i, target, 1.0, true)
+
+		# Compute local transform from global target
+		var local_transform = target
+		var parent_bone = skeleton.get_bone_parent(target_bone_skel_i)
+		if parent_bone != -1:
+			var parent_global = skeleton.get_bone_global_pose(parent_bone)
+			local_transform = parent_global.affine_inverse() * target
+
+		# Set local pose
+		skeleton.set_bone_pose_position(target_bone_skel_i, local_transform.origin)
+		skeleton.set_bone_pose_rotation(target_bone_skel_i, local_transform.basis.get_rotation_quaternion())
+		skeleton.set_bone_pose_scale(target_bone_skel_i, local_transform.basis.get_scale())
 		
 var root: Node3D
 var bones: Dictionary
@@ -57,7 +74,7 @@ func _init(animator: VRMAnimator, root_override = null, source_overrides := {}):
 		skel.add_child(root)
 	else:
 		root_override.add_child(root)
-	root.global_transform.basis.x = Vector3.LEFT
+	root.global_transform.basis = Basis.IDENTITY
 	for i in range(StandardBones.bones.size()):
 		var template = StandardBones.bones[i] as StandardBones.StandardBone
 		var target_bone_name: String

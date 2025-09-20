@@ -47,7 +47,11 @@ func vmd_from_file(path: String):
 func load_motions(motion_paths: Array):
 	var vmds = []
 	for motion_path in motion_paths:
-		vmds.append(vmd_from_file(motion_path))
+		var vmd = vmd_from_file(motion_path)
+		if vmd:
+			vmds.append(vmd)
+		else:
+			print("Failed to load VMD from ", motion_path)
 	motion = Motion.new(vmds)
 	
 	for i in range(motion.bones.size()):
@@ -142,7 +146,15 @@ func load_motions(motion_paths: Array):
 
 
 func _ready():
+	print("VMDPlayer: _ready called, animator_path: ", animator_path)
 	animator = get_node(animator_path)
+	print("VMDPlayer: get_node result: ", animator)
+	if animator:
+		print("VMDPlayer: animator class: ", animator.get_class())
+		print("VMDPlayer: animator script: ", animator.get_script())
+		print("VMDPlayer: animator has skeleton: ", animator.has_method("get_human_scale"))
+	else:
+		print("VMDPlayer: animator is null!")
 	set_process(false)
 	if not starting_file_path.is_empty():
 		load_motions([starting_file_path])
@@ -191,15 +203,18 @@ func apply_camera_frame(frame: float):
 
 func apply_bone_frame(frame: float):
 	frame = max(frame, 0.0)
+
 	for i in range(vmd_skeleton.bones.size()):
 		var bone = vmd_skeleton.bones[vmd_skeleton.bones.keys()[i]] as VMDSkeleton.VMDSkelBone
 		var curve = bone_curves[i] as Motion.BoneCurve
 		var sample_result := curve.sample(frame) as Motion.BoneCurve.BoneSampleResult
+
 		if not sample_result:
 			continue
+
 		var pos := sample_result.position
 		var rot = sample_result.rotation
-		
+
 		if mirror:
 			pos.x *= -1
 			rot.y *= -1
@@ -210,10 +225,11 @@ func apply_bone_frame(frame: float):
 		if scal == 0:
 			scal = anim_scale
 		pos *= scal
-		
+
 		if bone.name == StandardBones.get_bone_i("全ての親") or bone.name == StandardBones.get_bone_i("センター") \
 				or StandardBones.get_bone_i("左足ＩＫ") or bone.name == StandardBones.get_bone_i("右足ＩＫ"):
 			pos *= locomotion_scale
+
 		bone.node.transform.origin = pos + bone.local_position_0
 		bone.node.transform.basis = Basis(rot)
 
