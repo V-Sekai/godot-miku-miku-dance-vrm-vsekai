@@ -67,21 +67,30 @@ class BezierInterpolator:
 	var Y0: float
 	var X1: float
 	var Y1: float
-	
-	func inv_lerp(a: float, b: float, x: float) -> float:
-		x = inverse_lerp(a, b, x)
+
+	func x(t: float) -> float:
+		return 3.0 * (1.0 - t) * (1.0 - t) * t * X0 + 3.0 * (1.0 - t) * t * t * X1 + t * t * t
+
+	func y(t: float) -> float:
+		return 3.0 * (1.0 - t) * (1.0 - t) * t * Y0 + 3.0 * (1.0 - t) * t * t * Y1 + t * t * t
+
+	func inv_lerp(a: float, b: float, target_x: float) -> float:
+		var x_norm = inverse_lerp(a, b, target_x)
 		var t: float = 0.5
-		
 		var p = 0.25
-		
-		while p > 1e-6:
-			t -= p * sign(t*(3*(1-t)*(X0 + t*(X1-X0)) + t*t) - x)
+
+		for i in range(20):  # Binary search with fixed iterations for safety
+			var current_x = x(t)
+			var diff = current_x - x_norm
+			if abs(diff) < 1e-6:
+				break
+			t -= p * sign(diff)
 			p *= 0.5
-		return t*(3*(1-t)*(Y0 + t*(Y1-Y0)) + t*t)
-	
+		return y(t)
+
 	func is_linear() -> bool:
 		return X0 == Y0 and X1 == Y1
-		
+
 	func _to_string() -> String:
 		return str(Quaternion(X0, Y0, X1, Y1))
 
