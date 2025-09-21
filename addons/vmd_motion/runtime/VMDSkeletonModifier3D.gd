@@ -3,6 +3,9 @@ extends SkeletonModifier3D
 
 const FPS := 30.0
 
+# Root motion bone indices (bones that should have position animation applied)
+var ROOT_MOTION_BONES = [0, 1, 2]  # 全ての親, センター, グルーブ
+
 # VMD animation data
 var motion: Motion
 var bone_curves = []
@@ -198,6 +201,10 @@ func apply_bone_frame(frame: float):
 			if sample_result:
 				pos = sample_result.position
 				rot = sample_result.rotation
+
+		# Only apply position animation to root motion bones
+		if not (curve_index in ROOT_MOTION_BONES):
+			pos = Vector3.ZERO
 
 		if mirror:
 			pos.x *= -1
