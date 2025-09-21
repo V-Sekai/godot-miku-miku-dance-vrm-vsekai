@@ -54,11 +54,6 @@ func load_motions(motion_paths: Array):
 
 	motion = Motion.new(vmds)
 
-	print("DEBUG: Motion bones before translation:")
-	for i in range(min(5, motion.bones.size())):  # Show first 5
-		var key = motion.bones.keys()[i]
-		print("  Motion bone: '%s'" % key)
-
 	for i in range(motion.bones.size()):
 		var key = motion.bones.keys()[i]
 		var value = motion.bones.values()[i]
@@ -184,39 +179,50 @@ func _prepare_bake_context(animation: Animation) -> Dictionary:
 	Returns:
 		Dictionary containing pre-computed mappings and data
 	"""
-	# Include all motion bones (already translated) and filter to humanoid names
+	# Include all VMD bones (exclude only IK bones) and convert to humanoid names
 	print("=== VMD Bone Conversion Report ===")
-	print("Total bones in motion: ", motion.bones.size())
+	print("Total bones in VMD: ", vmd_modifier.vmd_skeleton.bones.size())
 
 	var bones_to_animate = []
-	var bone_translations = {}  # bone_name -> translated_name
+	var bone_translations = {}  # bone -> translated_name
+	var ik_bone_names = [
+		StandardBones.get_bone_name(StandardBones.get_bone_i("左足ＩＫ")),
+		StandardBones.get_bone_name(StandardBones.get_bone_i("右足ＩＫ")),
+		StandardBones.get_bone_name(StandardBones.get_bone_i("左つま先ＩＫ")),
+		StandardBones.get_bone_name(StandardBones.get_bone_i("右つま先ＩＫ"))
+	]
 
-	for bone_name in motion.bones.keys():
-		var translated_name = _translate_vrm_bone_name(bone_name)
+	for i in range(vmd_modifier.vmd_skeleton.bones.size()):
+		var bone = vmd_modifier.vmd_skeleton.bones[vmd_modifier.vmd_skeleton.bones.keys()[i]] as VMDSkeleton.VMDSkelBone
+		var translated_name = _translate_vrm_bone_name(bone.name)
 
-		if translated_name.is_empty():
+		if bone.name in ik_bone_names:
+			print("EXCLUDED (IK bone): ", bone.name, " -> ", translated_name)
+			continue
+		elif translated_name.is_empty():
 			# Skip bones that can't be translated to humanoid names
-			print("SKIPPED (can't translate): ", bone_name, " -> ", translated_name)
+			print("SKIPPED (can't translate): ", bone.name, " -> ", translated_name)
 			continue
 		else:
 			# Include bones that can be translated to humanoid names
-			print("CONVERTED: ", bone_name, " -> ", translated_name)
-			bones_to_animate.append(bone_name)
-			bone_translations[bone_name] = translated_name
+			print("CONVERTED: ", bone.name, " -> ", translated_name)
+			bones_to_animate.append(bone)
+			bone_translations[bone] = translated_name
 
 	print("Bones to animate: ", bones_to_animate.size())
 	print("=== End Bone Conversion Report ===")
 
 	# Create animation tracks for each bone using GeneralSkeleton scene path
-	var bone_to_tracks = {}  # bone_name -> {pos_track_idx, rot_track_idx}
+	var bone_to_tracks = {}  # bone -> {pos_track_idx, rot_track_idx}
+	var skeleton_root = vmd_modifier.get_parent()  # The skeleton node
 
-	for bone_name in bones_to_animate:
+	for bone in bones_to_animate:
 		# Use stored translated name from bone selection phase
-		var translated_bone_name = bone_translations[bone_name]
+		var translated_bone_name = bone_translations[bone]
 
 		# Skip bones with empty translations (shouldn't happen, but safety check)
 		if translated_bone_name.is_empty():
-			print("WARNING: Skipping bone with empty translation: ", bone_name)
+			print("WARNING: Skipping bone with empty translation: ", bone.name)
 			continue
 
 		# Position track - bone name becomes part of the property path
@@ -227,13 +233,15 @@ func _prepare_bake_context(animation: Animation) -> Dictionary:
 		var rot_track_idx = animation.add_track(Animation.TYPE_ROTATION_3D)
 		animation.track_set_path(rot_track_idx, "GeneralSkeleton:" + translated_bone_name)
 
-		bone_to_tracks[bone_name] = {"pos": pos_track_idx, "rot": rot_track_idx}
+		bone_to_tracks[bone] = {"pos": pos_track_idx, "rot": rot_track_idx}
 
-	# Store curve objects directly by bone name (no fragile indices)
-	var bone_to_curve = {}  # bone_name -> Motion.BoneCurve
-	for motion_bone_name in motion.bones.keys():
-		if bones_to_animate.has(motion_bone_name):
-			bone_to_curve[motion_bone_name] = motion.bones[motion_bone_name]
+	# Cache curve indices for each bone
+	var bone_to_curve = {}  # bone -> curve_index
+	for bone in bones_to_animate:
+		for j in range(vmd_modifier.bone_curves.size()):
+			if vmd_modifier.bone_curves[j] and vmd_modifier.vmd_skeleton.bones[vmd_modifier.vmd_skeleton.bones.keys()[j]] == bone:
+				bone_to_curve[bone] = j
+				break
 
 	return {
 		"bones_to_animate": bones_to_animate,
@@ -258,7 +266,8 @@ func _process_bake_frames(animation: Animation, context: Dictionary, start_time:
 			if not bone_to_curve.has(bone):
 				continue
 
-			var curve = bone_to_curve[bone] as Motion.BoneCurve
+			var curve_index = bone_to_curve[bone]
+			var curve = vmd_modifier.bone_curves[curve_index] as Motion.BoneCurve
 			var tracks = bone_to_tracks[bone]
 
 			# Sample VMD curve directly for original data
@@ -323,7 +332,7 @@ func _get_auto_bake_path(vmd_path: String) -> String:
 	return base_path + ".tres"
 
 func _translate_vrm_bone_name(japanese_name: String) -> String:
-	"""Translate Japanese bone names to Godot humanoid
+	"""Translate Japanese bone names to Godot humanoid using BoneMap
 
 	Args:
 		japanese_name: The Japanese bone name from VMD
@@ -331,10 +340,21 @@ func _translate_vrm_bone_name(japanese_name: String) -> String:
 	Returns:
 		Godot humanoid bone name, or empty string if not mapped
 	"""
+	# Load the bone map from the VRM model
+	var bone_map_path = "res://miku_miku_dance_vrm/art/demo_vrms/new_bone_map.tres"
+	var bone_map = load(bone_map_path) as BoneMap
+	if not bone_map:
+		print("ERROR: Failed to load bone map from ", bone_map_path)
+		return ""
+
 	# First apply StandardBones character fixes
 	var fixed_name = StandardBones.fix_bone_name(japanese_name)
 
-	# Simple mapping from common VMD Japanese names to Godot humanoid names
+	# Try to find this bone in the bone map
+	# The bone map maps from Godot humanoid names to actual skeleton names
+	# We need to find which humanoid name corresponds to our fixed Japanese name
+
+	# For now, use a simple mapping based on common translations
 	var vmd_to_humanoid = {
 		"センター": "Hips",
 		"下半身": "Hips",
@@ -359,44 +379,16 @@ func _translate_vrm_bone_name(japanese_name: String) -> String:
 		"右足": "RightUpperLeg",
 		"右ひざ": "RightLowerLeg",
 		"右足首": "RightFoot",
-		"右つま先": "RightToes",
-		# Finger bones
-		"左親指０": "LeftThumbMetacarpal",
-		"左親指１": "LeftThumbProximal",
-		"左親指２": "LeftThumbDistal",
-		"左人指１": "LeftIndexProximal",
-		"左人指２": "LeftIndexIntermediate",
-		"左人指３": "LeftIndexDistal",
-		"左中指１": "LeftMiddleProximal",
-		"左中指２": "LeftMiddleIntermediate",
-		"左中指３": "LeftMiddleDistal",
-		"左薬指１": "LeftRingProximal",
-		"左薬指２": "LeftRingIntermediate",
-		"左薬指３": "LeftRingDistal",
-		"左小指１": "LeftLittleProximal",
-		"左小指２": "LeftLittleIntermediate",
-		"左小指３": "LeftLittleDistal",
-		"右親指０": "RightThumbMetacarpal",
-		"右親指１": "RightThumbProximal",
-		"右親指２": "RightThumbDistal",
-		"右人指１": "RightIndexProximal",
-		"右人指２": "RightIndexIntermediate",
-		"右人指３": "RightIndexDistal",
-		"右中指１": "RightMiddleProximal",
-		"右中指２": "RightMiddleIntermediate",
-		"右中指３": "RightMiddleDistal",
-		"右薬指１": "RightRingProximal",
-		"右薬指２": "RightRingIntermediate",
-		"右薬指３": "RightRingDistal",
-		"右小指１": "RightLittleProximal",
-		"右小指２": "RightLittleIntermediate",
-		"右小指３": "RightLittleDistal"
+		"右つま先": "RightToes"
 	}
 
 	if vmd_to_humanoid.has(fixed_name):
-		return vmd_to_humanoid[fixed_name]
+		var humanoid_name = vmd_to_humanoid[fixed_name]
+		# Verify this humanoid name exists in the bone map
+		if bone_map.get_skeleton_bone_name(humanoid_name) != "":
+			return humanoid_name
 
-	return ""  # Not found in mapping
+	return ""  # Not found in bone map
 
 
 
