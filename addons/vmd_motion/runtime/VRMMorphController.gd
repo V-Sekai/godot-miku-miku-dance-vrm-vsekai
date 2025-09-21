@@ -21,25 +21,15 @@ func initialize(vrm_top_level: VRMTopLevel, meshes: Array):
 	mesh_idx_to_mesh = meshes
 
 func set_blend_shape_value(blend_shape_name: String, value: float):
-	# Check if VRM metadata with blend shapes is available (VRM 0.0 style)
-	if not vrm or not vrm.vrm_meta or not vrm.vrm_meta.get("blend_shape_groups"):
-		return  # VRM 1.0 or no blend shape metadata available
-
-	var meta = vrm.vrm_meta
-	var new_bs_name = ""
+	var target_name = blend_shape_name
 	if blend_shape_name in MMD_TO_VRM_MORPH:
-		blend_shape_name = MMD_TO_VRM_MORPH[blend_shape_name]
+		target_name = MMD_TO_VRM_MORPH[blend_shape_name]
 
-	if not meta.blend_shape_groups.has(blend_shape_name):
-		return  # Blend shape not found in VRM metadata
-
-	var group = meta.blend_shape_groups[blend_shape_name]
-	if not group or not group.binds:
-		return  # Invalid blend shape group
-
-	for bind in group.binds:
-		if bind.mesh < mesh_idx_to_mesh.size():
-			var weight = 0.99999 * float(bind.weight) / 100.0
-			var mesh := mesh_idx_to_mesh[bind.mesh] as MeshInstance3D
-			if mesh:
-				mesh.set("blend_shapes/morph_%d" % [bind.index], value * weight)
+	for mesh in mesh_idx_to_mesh:
+		if mesh is MeshInstance3D and mesh.mesh:
+			var blend_shape_count = mesh.mesh.get_blend_shape_count()
+			for i in range(blend_shape_count):
+				var bs_name = mesh.mesh.get_blend_shape_name(i)
+				if bs_name == target_name:
+					mesh.set("blend_shapes/" + bs_name, value)
+					break

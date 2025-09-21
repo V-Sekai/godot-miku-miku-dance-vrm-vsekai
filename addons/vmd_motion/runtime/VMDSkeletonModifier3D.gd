@@ -32,6 +32,7 @@ var previous_positions = {}
 var previous_rotations = {}
 
 func _ready():
+	print("VMDSkeletonModifier3D _ready called")
 	# Initialization is handled in set_motion()
 	pass
 
@@ -189,6 +190,7 @@ func apply_bone_frame(frame: float):
 				break
 
 		if curve_index == -1:
+			print("Unmapped bone: ", bone.name, " (", StandardBones.get_bone_name(bone.name), ")")
 			continue
 
 		var curve = bone_curves[curve_index] as Motion.BoneCurve
