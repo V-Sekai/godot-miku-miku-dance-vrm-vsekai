@@ -120,6 +120,7 @@ current = true
 title = "Open a File"
 ok_button_text = "Open"
 file_mode = 0
+access = 2
 filters = PackedStringArray("*.vrm ; VRM")
 show_hidden_files = true
 
