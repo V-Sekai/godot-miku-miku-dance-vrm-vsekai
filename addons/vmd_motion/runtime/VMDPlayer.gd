@@ -220,11 +220,6 @@ func _prepare_bake_context(animation: Animation) -> Dictionary:
 		# Use stored translated name from bone selection phase
 		var translated_bone_name = bone_translations[bone]
 
-		# Skip bones with empty translations (shouldn't happen, but safety check)
-		if translated_bone_name.is_empty():
-			print("WARNING: Skipping bone with empty translation: ", bone.name)
-			continue
-
 		# Position track - bone name becomes part of the property path
 		var pos_track_idx = animation.add_track(Animation.TYPE_POSITION_3D)
 		animation.track_set_path(pos_track_idx, "GeneralSkeleton:" + translated_bone_name)
@@ -332,63 +327,41 @@ func _get_auto_bake_path(vmd_path: String) -> String:
 	return base_path + ".tres"
 
 func _translate_vrm_bone_name(japanese_name: String) -> String:
-	"""Translate Japanese bone names to Godot humanoid using BoneMap
+	"""Translate Japanese bone names to English using StandardBones addon
 
 	Args:
 		japanese_name: The Japanese bone name from VMD
 
 	Returns:
-		Godot humanoid bone name, or empty string if not mapped
+		English bone name, or empty string if not a valid humanoid bone
 	"""
-	# Load the bone map from the VRM model
-	var bone_map_path = "res://miku_miku_dance_vrm/art/demo_vrms/new_bone_map.tres"
-	var bone_map = load(bone_map_path) as BoneMap
-	if not bone_map:
-		print("ERROR: Failed to load bone map from ", bone_map_path)
-		return ""
+	# Use StandardBones from the vmd_motion addon for consistent translation
+	var translated_name = StandardBones.fix_bone_name(japanese_name)
 
-	# First apply StandardBones character fixes
-	var fixed_name = StandardBones.fix_bone_name(japanese_name)
+	# Filter to only include Godot humanoid bones
+	var humanoid_bones = [
+		"Hips", "Spine", "Chest", "UpperChest", "Neck", "Head",
+		"LeftShoulder", "LeftUpperArm", "LeftLowerArm", "LeftHand",
+		"RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand",
+		"LeftUpperLeg", "LeftLowerLeg", "LeftFoot", "LeftToes",
+		"RightUpperLeg", "RightLowerLeg", "RightFoot", "RightToes",
+		"LeftThumbProximal", "LeftThumbIntermediate", "LeftThumbDistal",
+		"LeftIndexProximal", "LeftIndexIntermediate", "LeftIndexDistal",
+		"LeftMiddleProximal", "LeftMiddleIntermediate", "LeftMiddleDistal",
+		"LeftRingProximal", "LeftRingIntermediate", "LeftRingDistal",
+		"LeftLittleProximal", "LeftLittleIntermediate", "LeftLittleDistal",
+		"RightThumbProximal", "RightThumbIntermediate", "RightThumbDistal",
+		"RightIndexProximal", "RightIndexIntermediate", "RightIndexDistal",
+		"RightMiddleProximal", "RightMiddleIntermediate", "RightMiddleDistal",
+		"RightRingProximal", "RightRingIntermediate", "RightRingDistal",
+		"RightLittleProximal", "RightLittleIntermediate", "RightLittleDistal",
+		"LeftEye", "RightEye"
+	]
 
-	# Try to find this bone in the bone map
-	# The bone map maps from Godot humanoid names to actual skeleton names
-	# We need to find which humanoid name corresponds to our fixed Japanese name
-
-	# For now, use a simple mapping based on common translations
-	var vmd_to_humanoid = {
-		"センター": "Hips",
-		"下半身": "Hips",
-		"上半身": "Spine",
-		"上半身2": "Chest",
-		"首": "Neck",
-		"頭": "Head",
-		"左目": "LeftEye",
-		"右目": "RightEye",
-		"左肩": "LeftShoulder",
-		"左腕": "LeftUpperArm",
-		"左ひじ": "LeftLowerArm",
-		"左手首": "LeftHand",
-		"右肩": "RightShoulder",
-		"右腕": "RightUpperArm",
-		"右ひじ": "RightLowerArm",
-		"右手首": "RightHand",
-		"左足": "LeftUpperLeg",
-		"左ひざ": "LeftLowerLeg",
-		"左足首": "LeftFoot",
-		"左つま先": "LeftToes",
-		"右足": "RightUpperLeg",
-		"右ひざ": "RightLowerLeg",
-		"右足首": "RightFoot",
-		"右つま先": "RightToes"
-	}
-
-	if vmd_to_humanoid.has(fixed_name):
-		var humanoid_name = vmd_to_humanoid[fixed_name]
-		# Verify this humanoid name exists in the bone map
-		if bone_map.get_skeleton_bone_name(humanoid_name) != "":
-			return humanoid_name
-
-	return ""  # Not found in bone map
+	if humanoid_bones.has(translated_name):
+		return translated_name
+	else:
+		return ""  # Not a humanoid bone
 
 
 
