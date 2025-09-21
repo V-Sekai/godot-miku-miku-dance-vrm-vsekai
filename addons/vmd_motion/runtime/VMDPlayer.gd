@@ -25,11 +25,6 @@ var enable_ikq = false
 @export
 var enable_shape = true
 
-# Auto-bake settings
-@export var auto_bake := false  # Automatically bake VMD to Godot Animation
-@export var auto_bake_fps := 30.0  # FPS for auto-baking
-@export var auto_bake_loop := true  # Loop mode for auto-baked animation
-
 var start_time: int
 var time = 0.0
 var motion: Motion
@@ -54,6 +49,7 @@ func load_motions(motion_paths: Array):
 
 	motion = Motion.new(vmds)
 
+	# Fix bone names
 	for i in range(motion.bones.size()):
 		var key = motion.bones.keys()[i]
 		var value = motion.bones.values()[i]
@@ -66,13 +62,16 @@ func load_motions(motion_paths: Array):
 	max_frame = motion.get_max_frame()
 	print_debug("Duration: %.2f s (%d frames)" % [max_frame / FPS, max_frame])
 
+	# Create and setup the VMD modifier
 	if not vmd_modifier:
 		var modifier_script = load("res://addons/vmd_motion/runtime/VMDSkeletonModifier3D.gd")
 		vmd_modifier = modifier_script.new()
+		# Add modifier as child of the skeleton, not the animator
 		if animator and animator.skeleton:
 			animator.skeleton.add_child(vmd_modifier)
 			vmd_modifier.owner = animator.owner
 
+	# Configure the modifier
 	vmd_modifier.set_motion(motion)
 	vmd_modifier.anim_scale = anim_scale
 	vmd_modifier.mirror = mirror
@@ -81,12 +80,18 @@ func load_motions(motion_paths: Array):
 	vmd_modifier.enable_ikq = enable_ikq
 	vmd_modifier.enable_shape = enable_shape
 
-	if camera:
-		camera.queue_free()
-	if motion.camera.keyframes.size() > 0:
-		camera = Camera3D.new()
-		animator.add_child(camera)
-		camera.owner = animator.owner
+	if motion:
+		set_process(true)
+		start_time = Time.get_ticks_msec()
+
+		# Handle camera
+		if camera:
+			camera.queue_free()
+		if motion.camera.keyframes.size() > 0:
+			camera = Camera3D.new()
+			animator.add_child(camera)
+			camera.owner = animator.owner
+			camera.make_current()
 
 func _ready():
 	print("VMDPlayer: _ready called, animator_path: ", animator_path)
@@ -99,16 +104,14 @@ func _ready():
 	else:
 		print("VMDPlayer: animator is null!")
 	set_process(false)
-	# Disable auto-loading of starting file to prevent auto-play
-	# if not starting_file_path.is_empty():
-	#     load_motions([starting_file_path])
+	if not starting_file_path.is_empty():
+		load_motions([starting_file_path])
 
 func _process(delta):
 	if not manual_update_time:
 		time = (Time.get_ticks_msec() - start_time) / 1000.0
 	current_frame = time * FPS
-	# Only update modifier if actively playing (process enabled)
-	if vmd_modifier and is_processing():
+	if vmd_modifier:
 		vmd_modifier.set_frame(current_frame)
 		# Connect to modification_processed to handle post-modification tasks
 		if not vmd_modifier.is_connected("modification_processed", _on_vmd_modification_processed):
@@ -132,331 +135,3 @@ func apply_camera_frame(frame: float):
 	camera.global_transform.origin = (target_pos + (quat * Vector3.FORWARD) * camera_sample.distance) * anim_scale
 
 	camera.fov = camera_sample.angle
-
-## Animation Baking Functions
-
-func get_animation_length() -> float:
-	"""Return the total animation length in seconds"""
-	if not motion:
-		return 0.0
-	return motion.get_max_frame() / FPS
-
-func bake_vmd_animation(start_time: float, end_time: float, fps: float, loop: bool) -> Animation:
-	"""Bake VMD animation to Godot Animation resource with IK and constraints
-
-	Args:
-		start_time: Start time in seconds
-		end_time: End time in seconds
-		fps: Frames per second for keyframe sampling
-		loop: Enable infinite loop
-
-	Returns:
-		Godot Animation resource
-	"""
-	if not motion or not vmd_modifier:
-		return null
-
-	var animation = Animation.new()
-	var duration = end_time - start_time
-	animation.length = duration
-
-	if loop:
-		animation.loop_mode = Animation.LOOP_LINEAR
-	else:
-		animation.loop_mode = Animation.LOOP_NONE
-
-	# STATIC WORK: Setup phase (done once)
-	var bake_context = _prepare_bake_context(animation)
-
-	# PER-FRAME WORK: Processing phase (done for each frame)
-	_process_bake_frames(animation, bake_context, start_time, duration, fps)
-
-	return animation
-
-func _prepare_bake_context(animation: Animation) -> Dictionary:
-	"""Static setup work done once before frame processing
-
-	Returns:
-		Dictionary containing pre-computed mappings and data
-	"""
-	# Include all VMD bones (exclude only IK bones) and convert to humanoid names
-	print("=== VMD Bone Conversion Report ===")
-	print("Total bones in VMD: ", vmd_modifier.vmd_skeleton.bones.size())
-
-	var bones_to_animate = []
-	var bone_translations = {}  # bone -> translated_name
-	var ik_bone_names = [
-		StandardBones.get_bone_name(StandardBones.get_bone_i("左足ＩＫ")),
-		StandardBones.get_bone_name(StandardBones.get_bone_i("右足ＩＫ")),
-		StandardBones.get_bone_name(StandardBones.get_bone_i("左つま先ＩＫ")),
-		StandardBones.get_bone_name(StandardBones.get_bone_i("右つま先ＩＫ"))
-	]
-
-	for i in range(vmd_modifier.vmd_skeleton.bones.size()):
-		var bone = vmd_modifier.vmd_skeleton.bones[vmd_modifier.vmd_skeleton.bones.keys()[i]] as VMDSkeleton.VMDSkelBone
-		var translated_name = _translate_vrm_bone_name(bone.name)
-
-		if bone.name in ik_bone_names:
-			print("EXCLUDED (IK bone): ", bone.name, " -> ", translated_name)
-			continue
-		elif translated_name.is_empty():
-			# Skip bones that can't be translated to humanoid names
-			print("SKIPPED (can't translate): ", bone.name, " -> ", translated_name)
-			continue
-		else:
-			# Include bones that can be translated to humanoid names
-			print("CONVERTED: ", bone.name, " -> ", translated_name)
-			bones_to_animate.append(bone)
-			bone_translations[bone] = translated_name
-
-	print("Bones to animate: ", bones_to_animate.size())
-	print("=== End Bone Conversion Report ===")
-
-	# Create animation tracks for each bone using GeneralSkeleton scene path
-	var bone_to_tracks = {}  # bone -> {pos_track_idx, rot_track_idx}
-	var skeleton_root = vmd_modifier.get_parent()  # The skeleton node
-
-	for bone in bones_to_animate:
-		# Use stored translated name from bone selection phase
-		var translated_bone_name = bone_translations[bone]
-
-		# Position track - bone name becomes part of the property path
-		var pos_track_idx = animation.add_track(Animation.TYPE_POSITION_3D)
-		animation.track_set_path(pos_track_idx, "GeneralSkeleton:" + translated_bone_name)
-
-		# Rotation track - bone name becomes part of the property path
-		var rot_track_idx = animation.add_track(Animation.TYPE_ROTATION_3D)
-		animation.track_set_path(rot_track_idx, "GeneralSkeleton:" + translated_bone_name)
-
-		bone_to_tracks[bone] = {"pos": pos_track_idx, "rot": rot_track_idx}
-
-	# Cache curve indices for each bone
-	var bone_to_curve = {}  # bone -> curve_index
-	for bone in bones_to_animate:
-		for j in range(vmd_modifier.bone_curves.size()):
-			if vmd_modifier.bone_curves[j] and vmd_modifier.vmd_skeleton.bones[vmd_modifier.vmd_skeleton.bones.keys()[j]] == bone:
-				bone_to_curve[bone] = j
-				break
-
-	return {
-		"bones_to_animate": bones_to_animate,
-		"bone_to_tracks": bone_to_tracks,
-		"bone_to_curve": bone_to_curve
-	}
-
-func _process_bake_frames(animation: Animation, context: Dictionary, start_time: float, duration: float, fps: float) -> void:
-	"""Per-frame processing work done for each animation frame"""
-	var bones_to_animate = context.bones_to_animate
-	var bone_to_tracks = context.bone_to_tracks
-	var bone_to_curve = context.bone_to_curve
-
-	var frame_count = int(duration * fps) + 1
-
-	for frame_idx in range(frame_count):
-		var frame_time = start_time + (frame_idx / fps)
-		var vmd_frame = frame_time * FPS
-
-		# Sample all bones for this frame
-		for bone in bones_to_animate:
-			if not bone_to_curve.has(bone):
-				continue
-
-			var curve_index = bone_to_curve[bone]
-			var curve = vmd_modifier.bone_curves[curve_index] as Motion.BoneCurve
-			var tracks = bone_to_tracks[bone]
-
-			# Sample VMD curve directly for original data
-			var pos = Vector3.ZERO
-			var rot_quat = Quaternion.IDENTITY
-
-			if curve.keyframes.size() > 0:
-				var sample_result := curve.sample(vmd_frame) as Motion.BoneCurve.BoneSampleResult
-				if sample_result:
-					pos = sample_result.position
-					rot_quat = sample_result.rotation
-
-			# Apply coordinate transformations with appropriate scaling for Godot
-			pos *= 0.01  # Scale down for proper Miku units to meters conversion
-			pos.z *= -1
-			var temp = pos.x
-			pos.x = pos.z
-			pos.z = temp
-
-			# Bone orientations are handled by StandardBones translation
-
-			# Insert keyframes using cached track indices
-			if tracks.pos != -1:
-				animation.position_track_insert_key(tracks.pos, frame_time - start_time, pos)
-			if tracks.rot != -1:
-				animation.rotation_track_insert_key(tracks.rot, frame_time - start_time, rot_quat)
-
-		# Minimal debug output - only print progress every 500 frames
-		if int(frame_idx) % 500 == 0 and frame_idx > 0:
-			print("Baking progress: %.1f%% (%d/%d frames)" % [
-				(frame_idx / float(frame_count)) * 100.0,
-				frame_idx,
-				frame_count
-			])
-
-func _auto_bake_animation(vmd_path: String):
-	"""Automatically bake the loaded VMD animation to a Godot Animation resource"""
-	print("Auto-baking VMD animation...")
-
-	var length = get_animation_length()
-	var animation = bake_vmd_animation(0.0, length, auto_bake_fps, auto_bake_loop)
-
-	if animation:
-		# Generate save path based on VMD file location
-		var save_path = _get_auto_bake_path(vmd_path)
-		var save_result = ResourceSaver.save(animation, save_path)
-
-		if save_result == OK:
-			print("Auto-baked animation saved: ", save_path)
-			print("Animation length: %.2f s, Tracks: %d, Loop: %s" % [
-				animation.length, animation.get_track_count(),
-				"Yes" if animation.loop_mode == Animation.LOOP_LINEAR else "No"
-			])
-		else:
-			print("Failed to save auto-baked animation: ", save_result)
-	else:
-		print("Failed to auto-bake animation")
-
-func _get_auto_bake_path(vmd_path: String) -> String:
-	"""Generate the default save path for auto-baked animations"""
-	var base_path = vmd_path.get_basename()  # Remove .vmd extension
-	return base_path + ".tres"
-
-func _translate_vrm_bone_name(japanese_name: String) -> String:
-	"""Translate Japanese bone names to English using StandardBones addon
-
-	Args:
-		japanese_name: The Japanese bone name from VMD
-
-	Returns:
-		English bone name, or empty string if not a valid humanoid bone
-	"""
-	# Use StandardBones from the vmd_motion addon for consistent translation
-	var translated_name = StandardBones.fix_bone_name(japanese_name)
-
-	# Filter to only include Godot humanoid bones
-	var humanoid_bones = [
-		"Hips", "Spine", "Chest", "UpperChest", "Neck", "Head",
-		"LeftShoulder", "LeftUpperArm", "LeftLowerArm", "LeftHand",
-		"RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand",
-		"LeftUpperLeg", "LeftLowerLeg", "LeftFoot", "LeftToes",
-		"RightUpperLeg", "RightLowerLeg", "RightFoot", "RightToes",
-		"LeftThumbProximal", "LeftThumbIntermediate", "LeftThumbDistal",
-		"LeftIndexProximal", "LeftIndexIntermediate", "LeftIndexDistal",
-		"LeftMiddleProximal", "LeftMiddleIntermediate", "LeftMiddleDistal",
-		"LeftRingProximal", "LeftRingIntermediate", "LeftRingDistal",
-		"LeftLittleProximal", "LeftLittleIntermediate", "LeftLittleDistal",
-		"RightThumbProximal", "RightThumbIntermediate", "RightThumbDistal",
-		"RightIndexProximal", "RightIndexIntermediate", "RightIndexDistal",
-		"RightMiddleProximal", "RightMiddleIntermediate", "RightMiddleDistal",
-		"RightRingProximal", "RightRingIntermediate", "RightRingDistal",
-		"RightLittleProximal", "RightLittleIntermediate", "RightLittleDistal",
-		"LeftEye", "RightEye"
-	]
-
-	if humanoid_bones.has(translated_name):
-		return translated_name
-	else:
-		return ""  # Not a humanoid bone
-
-
-
-func _get_incremental_save_path(base_path: String) -> String:
-	"""Generate an incremental filename if the base path already exists
-
-	Args:
-		base_path: The desired save path (should end with .tres)
-
-	Returns:
-		A unique path that doesn't conflict with existing files
-	"""
-	var file_path = base_path
-	var counter = 1
-	var original_base = base_path.get_basename()  # Get base name once from original path
-	var extension = base_path.get_extension()
-
-	# Check if the base file exists
-	while FileAccess.file_exists(file_path) or ResourceLoader.exists(file_path):
-		# Insert counter before the file extension using original base
-		file_path = original_base + "_%03d" % counter + "." + extension
-		counter += 1
-
-		# Prevent infinite loops (though unlikely)
-		if counter > 999:
-			break
-
-	return file_path
-
-func manual_bake_animation(vmd_path: String = "") -> Animation:
-	"""Manually bake the current VMD animation to a Godot Animation resource
-
-	Args:
-		vmd_path: Optional path to save the animation (uses auto-generated path if empty)
-
-	Returns:
-		The baked Animation resource, or null if baking failed
-	"""
-	if not motion:
-		print("No VMD motion loaded to bake")
-		return null
-
-	print("Manually baking VMD animation...")
-
-	var length = get_animation_length()
-	var animation = bake_vmd_animation(0.0, length, auto_bake_fps, auto_bake_loop)
-
-	if animation:
-		# Generate save path - ensure it's in the project directory
-		var save_path = vmd_path
-		if save_path.is_empty():
-			save_path = _get_auto_bake_path("manual_bake")
-		else:
-			# Convert absolute path to project-relative path
-			if save_path.begins_with(ProjectSettings.globalize_path("res://")):
-				save_path = ProjectSettings.localize_path(save_path)
-			else:
-				# If it's an absolute path, try to make it relative to the project
-				var project_dir = ProjectSettings.globalize_path("res://")
-				if save_path.begins_with(project_dir):
-					save_path = "res://" + save_path.substr(project_dir.length())
-				else:
-					# Fallback: save to user directory
-					save_path = "user://" + save_path.get_file().get_basename() + ".tres"
-
-		# Ensure the path ends with .tres
-		if not save_path.ends_with(".tres"):
-			save_path = save_path.get_basename() + ".tres"
-
-		# Generate incremental filename if file already exists
-		save_path = _get_incremental_save_path(save_path)
-
-		print("Attempting to save animation to: ", save_path)
-		var save_result = ResourceSaver.save(animation, save_path)
-
-		if save_result == OK:
-			print("Manually baked animation saved: ", save_path)
-			print("Animation length: %.2f s, Tracks: %d, Loop: %s" % [
-				animation.length, animation.get_track_count(),
-				"Yes" if animation.loop_mode == Animation.LOOP_LINEAR else "No"
-			])
-			return animation
-		else:
-			print("Failed to save manually baked animation: ", save_result)
-			print("Save path was: ", save_path)
-			# Try fallback to user directory
-			var fallback_path = "user://" + save_path.get_file().get_basename()
-			print("Trying fallback save to: ", fallback_path)
-			save_result = ResourceSaver.save(animation, fallback_path)
-			if save_result == OK:
-				print("Fallback save successful: ", fallback_path)
-				return animation
-			else:
-				print("Fallback save also failed: ", save_result)
-	else:
-		print("Failed to manually bake animation")
-
-	return null

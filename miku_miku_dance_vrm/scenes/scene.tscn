@@ -70,27 +70,6 @@ size_flags_vertical = 10
 [node name="Label" type="Label" parent="Control/Panel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Control/Panel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="PlayButton" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-text = "▶ Play"
-
-[node name="PauseButton" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-text = "⏸ Pause"
-
-[node name="StopButton" type="Button" parent="Control/Panel/MarginContainer/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-text = "⏹ Stop"
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="Control/Panel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="AnimationDropdown" type="OptionButton" parent="Control/Panel/MarginContainer/VBoxContainer/HBoxContainer2"]
-layout_mode = 2
-
 [node name="ColorRect" type="ColorRect" parent="Control"]
 layout_mode = 0
 offset_left = 16.1054
@@ -141,7 +120,6 @@ current = true
 title = "Open a File"
 ok_button_text = "Open"
 file_mode = 0
-access = 2
 filters = PackedStringArray("*.vrm ; VRM")
 show_hidden_files = true
 
@@ -150,7 +128,6 @@ mode = 1
 title = "Open File(s)"
 ok_button_text = "Open"
 file_mode = 1
-access = 2
 filters = PackedStringArray("*.vmd ; VMD")
 show_hidden_files = true
 
