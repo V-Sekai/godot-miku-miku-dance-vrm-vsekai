@@ -61,13 +61,33 @@ func instance_model() -> void:
 	vmd_player.set_script(player_script)
 	vmd_player.name = "VMDPlayer"
 
-	model_instance.rotate_y(deg_to_rad(180))
-	animator.add_child(model_instance)
-	root.add_child(animator)
+	# Debug: Print scene structure
+	print("Model instance children:")
+	for child in model_instance.get_children():
+		print("  - ", child.name, " (", child.get_class(), ")")
+
+	# Find the VRMTopLevel within the GLTF scene and add it as a child of the animator
+	var vrm_top_level = _find_vrm_top_level(model_instance)
+	if vrm_top_level:
+		print("Found VRMTopLevel: ", vrm_top_level.name, " (", vrm_top_level.get_class(), ")")
+		print("VRMTopLevel children:")
+		for child in vrm_top_level.get_children():
+			print("  - ", child.name, " (", child.get_class(), ")")
+		vrm_top_level.rotate_y(deg_to_rad(180))
+		animator.add_child(vrm_top_level)
+	else:
+		print("VRMTopLevel not found, using entire model instance")
+		model_instance.rotate_y(deg_to_rad(180))
+		animator.add_child(model_instance)
+
+	# Add animator to root AFTER its children are set up (use call_deferred to ensure timing)
+	root.call_deferred("add_child", animator)
 	vmd_player.animator_path = NodePath("../VRMAnimator")  # Use relative path
-	root.add_child(vmd_player)
+	root.call_deferred("add_child", vmd_player)
+
+	# Defer motion loading to ensure everything is set up
 	if motion_paths.size() > 0:
-		instance_motion()
+		call_deferred("instance_motion")
 
 func _process(_delta) -> void:
 	if vmd_player:
@@ -103,6 +123,15 @@ func _find_skeleton(node: Node) -> Skeleton3D:
 		if child is Skeleton3D:
 			return child
 		var found = _find_skeleton(child)
+		if found:
+			return found
+	return null
+
+func _find_vrm_top_level(node: Node) -> Node:
+	for child in node.get_children():
+		if child is VRMTopLevel:
+			return child
+		var found = _find_vrm_top_level(child)
 		if found:
 			return found
 	return null

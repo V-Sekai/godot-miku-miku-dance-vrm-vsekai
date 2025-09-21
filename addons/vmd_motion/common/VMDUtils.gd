@@ -104,7 +104,7 @@ static func read_quat(file: FileAccess) -> Quaternion:
 	var y = file.get_float()
 	var z = file.get_float()
 	var w = file.get_float()
-	return Quaternion(x, y, z, w)
+	return Quaternion(x, y, z, w).normalized()
 
 static func read_bezier(file: FileAccess, stride: int) -> BezierInterpolator:
 	var binterp = BezierInterpolator.new()

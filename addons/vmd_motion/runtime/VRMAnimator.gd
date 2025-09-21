@@ -28,11 +28,27 @@ var mesh_idx_to_mesh = []
 var mmd_to_godot_bone_map: Dictionary = {}
 
 func _ready():
-	assert(get_child_count() > 0, "Must have a VRMTopLevel as the only child")
-	assert(get_child(0) is VRMTopLevel, "Must have a VRMTopLevel as the only child")
+	# Check if child is ready, if not defer initialization
+	if get_child_count() == 0 or not (get_child(0) is VRMTopLevel):
+		print("VRMAnimator: Child not ready, deferring initialization")
+		call_deferred("_initialize_vrm")
+		return
+	_initialize_vrm()
+
+func _initialize_vrm():
+	if get_child_count() == 0:
+		push_error("VRMAnimator: No children found after deferred initialization")
+		return
+	if not (get_child(0) is VRMTopLevel):
+		push_error("VRMAnimator: First child must be VRMTopLevel, found: ", get_child(0).get_class())
+		return
+
 	vrm = get_child(0)
 	skeleton = find_skeleton(vrm)
-	assert(skeleton, "VRMTopLevel must contain a Skeleton3D")
+	if not skeleton:
+		push_error("VRMAnimator: VRMTopLevel must contain a Skeleton3D")
+		return
+
 	print("VRMAnimator: Skeleton found with ", skeleton.get_bone_count(), " bones and ", skeleton.get_child_count(), " mesh children")
 	if vrm.vrm_meta and vrm.vrm_meta.humanoid_bone_mapping:
 		print("DEBUG Humanoid bone mapping exists")

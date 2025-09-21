@@ -34,12 +34,14 @@ class VMDSkelBone:
 			var bone_idx = skeleton.find_bone(_target)
 			if bone_idx != -1:
 				target = skeleton.get_bone_global_rest(bone_idx)
-				target_position = node.global_transform.affine_inverse() * target.origin
-				target_rotation = node.global_transform.basis.get_rotation_quaternion().inverse() * target.basis.get_rotation_quaternion()
+				# Initialize target_position and target_rotation to identity relative transforms
+				target_position = Vector3.ZERO
+				target_rotation = Quaternion.IDENTITY
 		elif _target is Transform3D:
 			target = _target
-			target_position = node.global_transform.affine_inverse() * target.origin
-			target_rotation = node.global_transform.basis.get_rotation_quaternion().inverse() * target.basis.get_rotation_quaternion()
+			# Initialize target_position and target_rotation to identity relative transforms
+			target_position = Vector3.ZERO
+			target_rotation = Quaternion.IDENTITY
 	func apply_target():
 		if target != null:
 			target.origin = node.global_transform * target_position
@@ -51,27 +53,25 @@ class VMDSkelBone:
 		if target_bone_skel_i == -1:
 			return
 
-		# Compute local transform from global target
-		var local_transform = target
+		# Get the bone's rest pose (global)
+		var rest_global = skeleton.get_bone_global_rest(target_bone_skel_i)
+
+		# Compute the desired global transform relative to rest pose
+		var desired_global = rest_global * target
+
+		# Convert to local space relative to parent
 		var parent_bone = skeleton.get_bone_parent(target_bone_skel_i)
 		if parent_bone != -1:
-			var parent_global = skeleton.get_bone_global_pose(parent_bone)
-			local_transform = parent_global.affine_inverse() * target
-
-		# Debug: Log computed local transform for first few bones
-		var bone_name = skeleton.get_bone_name(target_bone_skel_i)
-		if target_bone_skel_i < 5:
-			print("DEBUG Local Transform - Bone ", target_bone_skel_i, " (", bone_name, ") Local Pos: ", local_transform.origin, " Local Rot: ", local_transform.basis.get_rotation_quaternion())
-
-		# Set local pose
-		skeleton.set_bone_pose_position(target_bone_skel_i, local_transform.origin)
-		skeleton.set_bone_pose_rotation(target_bone_skel_i, local_transform.basis.get_rotation_quaternion())
-		skeleton.set_bone_pose_scale(target_bone_skel_i, local_transform.basis.get_scale())
-
-		# Debug: Log final global position
-		if target_bone_skel_i < 5:
-			var final_global = skeleton.get_bone_global_pose(target_bone_skel_i)
-			print("DEBUG Final Global - Bone ", target_bone_skel_i, " (", bone_name, ") Global Pos: ", final_global.origin, " Global Rot: ", final_global.basis.get_rotation_quaternion())
+			var parent_global_rest = skeleton.get_bone_global_rest(parent_bone)
+			var local_transform = parent_global_rest.affine_inverse() * desired_global
+			skeleton.set_bone_pose_position(target_bone_skel_i, local_transform.origin)
+			skeleton.set_bone_pose_rotation(target_bone_skel_i, local_transform.basis.get_rotation_quaternion())
+			skeleton.set_bone_pose_scale(target_bone_skel_i, local_transform.basis.get_scale())
+		else:
+			# Root bone
+			skeleton.set_bone_pose_position(target_bone_skel_i, desired_global.origin)
+			skeleton.set_bone_pose_rotation(target_bone_skel_i, desired_global.basis.get_rotation_quaternion())
+			skeleton.set_bone_pose_scale(target_bone_skel_i, desired_global.basis.get_scale())
 		
 var root: Node3D
 var bones: Dictionary
@@ -118,15 +118,20 @@ func apply_targets():
 	for i in range(bones.size()):
 		var bone = bones[bones.keys()[i]] as VMDSkelBone
 		bone.apply_target()
+	# Force update all bone transforms to make pose changes visible
+	if bones.size() > 0:
+		var first_bone = bones[bones.keys()[0]] as VMDSkelBone
+		if first_bone and first_bone.skeleton:
+			first_bone.skeleton.force_update_all_bone_transforms()
 		
 func apply_constraints(apply_ik = true, apply_ikq = false):
 	for i in range(StandardBones.constraints.size()):
 		var constraint = StandardBones.constraints[i] as StandardBones.Constraint
-		
+
 		if constraint is StandardBones.RotAdd:
 			var target = (bones[bones.keys()[constraint.target]] as VMDSkelBone).node
 			var source = (bones[bones.keys()[constraint.source]] as VMDSkelBone).node
-			
+
 			if constraint.minus:
 				target.global_transform.basis = source.get_parent().global_transform.basis * source.global_transform.basis.inverse() * target.global_transform.basis
 			else:
@@ -136,7 +141,7 @@ func apply_constraints(apply_ik = true, apply_ikq = false):
 			var lower_leg = bones[constraint.target_1].node as Node3D
 			var foot = bones[constraint.target_2].node as Node3D
 			var foot_ik = bones[constraint.source] as VMDSkelBone
-			
+
 			if not foot_ik.ik_enabled:
 				continue
 			var local_target := upper_leg.global_transform.affine_inverse() * foot_ik.node.global_transform.origin as Vector3
@@ -151,7 +156,7 @@ func apply_constraints(apply_ik = true, apply_ikq = false):
 			var toe = bones[bones.keys()[constraint.target_1]].node as Node3D
 			var foot_ik = null if not constraint.source_0 else bones[bones.keys()[constraint.source_0]]
 			var toe_ik = null if not constraint.source_1 else bones[bones.keys()[constraint.source_1]]
-			
+
 			if foot_ik != null and !foot_ik.ik_enabled:
 				continue
 			if foot_ik != null and apply_ikq:
@@ -184,7 +189,7 @@ func quat_from_to_rotation(from: Vector3, to: Vector3) -> Quaternion:
 	else:
 		q = Quaternion.IDENTITY
 		var s := sqrt((1.0+d) * 2.0)
-		var invs := 1.0 / s
+		var invs := 0.07 / s
 		var c := from.cross(to)
 
 		q.x = c.x * invs

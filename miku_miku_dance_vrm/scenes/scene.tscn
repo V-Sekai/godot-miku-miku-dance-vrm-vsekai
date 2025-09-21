@@ -113,7 +113,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.02458, 0)
 script = ExtResource("2_1uvpu")
 
 [node name="Camera3D" type="Camera3D" parent="Node3D"]
-transform = Transform3D(-0.9999999999999999, 0, 1.224646799147353e-16, 0, 1, 0, -1.224646799147353e-16, 0, -0.9999999999999999, 0, 0.2930000000051223, -1.9539999999979045)
+transform = Transform3D(-1, 0, 1.2246467991473532e-16, 0, 1, 0, -1.2246467991473532e-16, 0, -1, 7.758817594795584e-17, 0.07614402406684895, -1.320444463805953)
 current = true
 
 [node name="VRMOpenFileDialog" type="FileDialog" parent="."]
