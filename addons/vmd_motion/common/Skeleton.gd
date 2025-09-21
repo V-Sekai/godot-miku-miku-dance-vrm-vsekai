@@ -2,7 +2,7 @@ class_name VMDSkeleton
 
 
 class VMDSkelBone:
-	var name: int
+	var name: String
 	var node: Node3D
 	var rest_local_position: Vector3
 	var rest_local_rotation: Quaternion  # Rest local rotation
@@ -19,12 +19,12 @@ class VMDSkelBone:
 	# source: transform
 	# _target: transform
 	func _init(_name: int, parent_node: Node3D, source, _target, skel: Skeleton3D, _target_bone_skel_i: int):
-		name = _name
+		name = StandardBones.get_bone_name(_name)
 		skeleton = skel
 		target_bone_skel_i = _target_bone_skel_i
-		
+
 		node = Node3D.new()
-		node.name = StandardBones.get_bone_name(name)
+		node.name = name
 		parent_node.add_child(node)
 		
 		if source is Transform3D:

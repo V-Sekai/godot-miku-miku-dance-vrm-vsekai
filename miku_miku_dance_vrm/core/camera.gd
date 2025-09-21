@@ -23,7 +23,7 @@ func _process(delta) -> void:
 
 		var movement_multiplier = 1.0
 
-		if Input.is_key_pressed(KEY_SHIFT):
+		if Input.is_action_pressed("sprint"):
 			movement_multiplier = 3.0
 		global_transform.origin += change * movement_multiplier * delta
 		camera.transform.origin += local_movement * delta * movement_multiplier

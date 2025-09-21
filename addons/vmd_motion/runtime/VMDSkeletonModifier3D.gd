@@ -180,10 +180,10 @@ func apply_bone_frame(frame: float):
 	for bone in bones_to_process:
 		# Skip IK bones - they should only be used as IK targets, not animated as regular bones
 		var ik_bone_names = [
-			StandardBones.get_bone_i("左足ＩＫ"),
-			StandardBones.get_bone_i("右足ＩＫ"),
-			StandardBones.get_bone_i("左つま先ＩＫ"),
-			StandardBones.get_bone_i("右つま先ＩＫ")
+			StandardBones.get_bone_name(StandardBones.get_bone_i("左足ＩＫ")),
+			StandardBones.get_bone_name(StandardBones.get_bone_i("右足ＩＫ")),
+			StandardBones.get_bone_name(StandardBones.get_bone_i("左つま先ＩＫ")),
+			StandardBones.get_bone_name(StandardBones.get_bone_i("右つま先ＩＫ"))
 		]
 		if bone.name in ik_bone_names:
 			continue  # Skip IK bones from regular animation
@@ -217,6 +217,14 @@ func apply_bone_frame(frame: float):
 		# Apply animation scale to position (convert from MMD units to Godot units)
 		pos *= anim_scale
 
+		# Coordinate system conversion: MMD uses Z-forward, Godot uses Z-backward
+		pos.z *= -1
+
+		# Check if axes are swapped in VMD format (X <-> Z)
+		var temp = pos.x
+		pos.x = pos.z
+		pos.z = temp
+
 		# Apply smoothing to prevent jumps when skipping frames
 		if not previous_positions.has(bone.name):
 			previous_positions[bone.name] = pos
@@ -235,8 +243,8 @@ func apply_bone_frame(frame: float):
 		# Apply locomotion scale for specific bones
 		var final_local_pos = desired_local_pos
 		var final_local_rot = desired_local_rot
-		if bone.name == StandardBones.get_bone_i("全ての親") or bone.name == StandardBones.get_bone_i("センター") \
-				or bone.name == StandardBones.get_bone_i("左足ＩＫ") or bone.name == StandardBones.get_bone_i("右足ＩＫ"):
+		if bone.name == StandardBones.get_bone_name(StandardBones.get_bone_i("全ての親")) or bone.name == StandardBones.get_bone_name(StandardBones.get_bone_i("センター")) \
+				or bone.name == StandardBones.get_bone_name(StandardBones.get_bone_i("左足ＩＫ")) or bone.name == StandardBones.get_bone_name(StandardBones.get_bone_i("右足ＩＫ")):
 			if locomotion_scale != Vector3.ONE:
 				# Apply locomotion scaling to the local position (transform by rest rotation)
 				final_local_pos = bone.rest_local_position + (bone.rest_local_rotation * (pos * locomotion_scale))
