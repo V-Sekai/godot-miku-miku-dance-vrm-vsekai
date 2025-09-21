@@ -66,19 +66,10 @@ func instance_model() -> void:
 	for child in model_instance.get_children():
 		print("  - ", child.name, " (", child.get_class(), ")")
 
-	# Find the VRMTopLevel within the GLTF scene and add it as a child of the animator
-	var vrm_top_level = _find_vrm_top_level(model_instance)
-	if vrm_top_level:
-		print("Found VRMTopLevel: ", vrm_top_level.name, " (", vrm_top_level.get_class(), ")")
-		print("VRMTopLevel children:")
-		for child in vrm_top_level.get_children():
-			print("  - ", child.name, " (", child.get_class(), ")")
-		vrm_top_level.rotate_y(deg_to_rad(180))
-		animator.add_child(vrm_top_level)
-	else:
-		print("VRMTopLevel not found, using entire model instance")
-		model_instance.rotate_y(deg_to_rad(180))
-		animator.add_child(model_instance)
+	# Always use the entire model instance (avoid finding VRMTopLevel)
+	print("Using entire model instance")
+	model_instance.rotate_y(deg_to_rad(180))
+	animator.add_child(model_instance)
 
 	# Add animator to root AFTER its children are set up (use call_deferred to ensure timing)
 	root.call_deferred("add_child", animator)

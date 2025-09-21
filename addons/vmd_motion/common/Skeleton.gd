@@ -4,14 +4,15 @@ class_name VMDSkeleton
 class VMDSkelBone:
 	var name: int
 	var node: Node3D
-	var local_position_0: Vector3
-	
+	var rest_local_position: Vector3
+	var rest_local_rotation: Quaternion  # Rest local rotation
+
 	var target = null
 	var target_position: Vector3
 	var target_rotation: Quaternion
-	
+
 	var skeleton: Skeleton3D
-	
+
 	var ik_enabled: bool
 	var target_bone_skel_i: int
 	
@@ -28,7 +29,8 @@ class VMDSkelBone:
 		
 		if source is Transform3D:
 			node.global_transform.origin = source.origin
-		local_position_0 = node.transform.origin
+		rest_local_position = node.transform.origin
+		rest_local_rotation = node.transform.basis.get_rotation_quaternion()
 		
 		if _target is String:
 			var bone_idx = skeleton.find_bone(_target)

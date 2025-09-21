@@ -29,7 +29,7 @@ var mmd_to_godot_bone_map: Dictionary = {}
 
 func _ready():
 	# Check if child is ready, if not defer initialization
-	if get_child_count() == 0 or not (get_child(0) is VRMTopLevel):
+	if get_child_count() == 0:
 		print("VRMAnimator: Child not ready, deferring initialization")
 		call_deferred("_initialize_vrm")
 		return
@@ -39,17 +39,29 @@ func _initialize_vrm():
 	if get_child_count() == 0:
 		push_error("VRMAnimator: No children found after deferred initialization")
 		return
-	if not (get_child(0) is VRMTopLevel):
-		push_error("VRMAnimator: First child must be VRMTopLevel, found: ", get_child(0).get_class())
-		return
 
-	vrm = get_child(0)
-	skeleton = find_skeleton(vrm)
+	var model_root = get_child(0)
+
+	# Assume VRM format - find VRM metadata in the model hierarchy
+	vrm = _find_vrm_top_level(model_root)
+	if vrm:
+		print("VRMAnimator: Found VRMTopLevel in model hierarchy")
+	else:
+		print("VRMAnimator: No VRMTopLevel found - VRM file may not be properly imported")
+		# Create a minimal VRM object for compatibility
+		vrm = VRMTopLevel.new()
+
+	# Find skeleton in the model hierarchy
+	skeleton = find_skeleton(model_root)
 	if not skeleton:
-		push_error("VRMAnimator: VRMTopLevel must contain a Skeleton3D")
+		push_error("VRMAnimator: Model must contain a Skeleton3D")
 		return
 
-	print("VRMAnimator: Skeleton found with ", skeleton.get_bone_count(), " bones and ", skeleton.get_child_count(), " mesh children")
+	print("VRMAnimator: Skeleton found with ", skeleton.get_bone_count(), " bones")
+
+	# Find mesh instances in the model hierarchy
+	_find_mesh_instances(model_root)
+
 	if vrm.vrm_meta and vrm.vrm_meta.humanoid_bone_mapping:
 		print("DEBUG Humanoid bone mapping exists")
 		var profile = vrm.vrm_meta.humanoid_bone_mapping.get_profile()
@@ -74,9 +86,6 @@ func _initialize_vrm():
 	var rest_bones : Dictionary
 	_fetch_reset_animation(skeleton, rest_bones)
 	_fix_skeleton(skeleton, rest_bones)
-	for child in skeleton.get_children():
-		if child is MeshInstance3D:
-			mesh_idx_to_mesh.append(child)
 
 func find_skeleton(node: Node) -> Skeleton3D:
 	for child in node.get_children():
@@ -86,6 +95,32 @@ func find_skeleton(node: Node) -> Skeleton3D:
 		if found:
 			return found
 	return null
+
+func _find_vrm_top_level(node: Node) -> VRMTopLevel:
+	for child in node.get_children():
+		if child is VRMTopLevel:
+			return child
+		var found = _find_vrm_top_level(child)
+		if found:
+			return found
+	return null
+
+func _find_vrm_meta(node: Node):
+	for child in node.get_children():
+		if child is VRMTopLevel and child.vrm_meta:
+			return child.vrm_meta
+		var found = _find_vrm_meta(child)
+		if found:
+			return found
+	return null
+
+func _find_mesh_instances(node: Node):
+	for child in node.get_children():
+		if child is MeshInstance3D:
+			mesh_idx_to_mesh.append(child)
+		_find_mesh_instances(child)
+
+
 
 func find_humanoid_bone(bone_name: String) -> int:
 	var godot_name = mmd_to_godot_bone_map.get(bone_name, bone_name)
@@ -182,15 +217,25 @@ func _fix_skeleton(p_skeleton : Skeleton3D, r_rest_bones : Dictionary) -> void:
 		p_skeleton.set_bone_rest(i, rest_transform)
 
 func set_blend_shape_value(blend_shape_name: String, value: float):
+	# Check if VRM metadata with blend shapes is available (VRM 0.0 style)
+	if not vrm or not vrm.vrm_meta or not vrm.vrm_meta.get("blend_shape_groups"):
+		return  # VRM 1.0 or no blend shape metadata available
+
 	var meta = vrm.vrm_meta
 	var new_bs_name = ""
 	if blend_shape_name in MMD_TO_VRM_MORPH:
 		blend_shape_name = MMD_TO_VRM_MORPH[blend_shape_name]
-		if not meta.get("blend_shape_groups"):
-			return
-		var group = meta.blend_shape_groups[blend_shape_name]
-		for bind in group.binds:
-			if bind.mesh < mesh_idx_to_mesh.size():
-				var weight = 0.99999 * float(bind.weight) / 100.0
-				var mesh := mesh_idx_to_mesh[bind.mesh] as MeshInstance3D
+
+	if not meta.blend_shape_groups.has(blend_shape_name):
+		return  # Blend shape not found in VRM metadata
+
+	var group = meta.blend_shape_groups[blend_shape_name]
+	if not group or not group.binds:
+		return  # Invalid blend shape group
+
+	for bind in group.binds:
+		if bind.mesh < mesh_idx_to_mesh.size():
+			var weight = 0.99999 * float(bind.weight) / 100.0
+			var mesh := mesh_idx_to_mesh[bind.mesh] as MeshInstance3D
+			if mesh:
 				mesh.set("blend_shapes/morph_%d" % [bind.index], value * weight)

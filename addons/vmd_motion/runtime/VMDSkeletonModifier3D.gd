@@ -16,7 +16,7 @@ var max_frame: int = 0
 var first_frame_number: int = 0
 
 # Settings
-var anim_scale := 0.07
+@export var anim_scale := 0.01  # Convert MMD centimeters to Godot meters
 var mirror = false
 var locomotion_scale = Vector3.ONE
 var enable_ik = true
@@ -27,7 +27,6 @@ var smoothing_factor = 0.3  # Adjust this value to control smoothing (0.0 = no s
 var last_ik_enable = {}
 var previous_positions = {}
 var previous_rotations = {}
-var previous_chest_global: Transform3D
 
 func _ready():
 	# Initialization is handled in set_motion()
@@ -53,27 +52,10 @@ func set_motion(new_motion: Motion):
 		var bone_name = StandardBones.get_bone_name(i)
 		if bone_name in motion.bones:
 			bone_curves.append(motion.bones[bone_name])
-			# Debug: Check head bone keyframes
-			if bone_name == "頭":
-				print("DEBUG: Head bone found in VMD with ", motion.bones[bone_name].keyframes.size(), " keyframes")
 		else:
 			bone_curves.append(Motion.BoneCurve.new())
-			# Debug: Check if head bone is missing
-			if bone_name == "頭":
-				print("DEBUG: Head bone NOT found in VMD")
 
 	max_frame = motion.get_max_frame()
-
-	# Log all bones with VMD animation data (summary)
-	print("\n=== VMD Animation Data Summary ===")
-	print("Total frames: ", max_frame)
-	print("Bones with animation data:")
-	for bone_name in motion.bones:
-		var curve = motion.bones[bone_name] as Motion.BoneCurve
-		var keyframe_count = curve.keyframes.size()
-		if keyframe_count > 0:
-			print("  - ", bone_name, " (", keyframe_count, " keyframes)")
-	print("===================================\n")
 
 	# Calculate first frame number (skip linear motion start frames)
 	first_frame_number = 0
@@ -192,8 +174,8 @@ func apply_bone_frame(frame: float):
 		if bone.target_bone_skel_i != -1:
 			bones_to_process.append(bone)
 
-	# Sort bones by hierarchy depth (leaf to root)
-	bones_to_process.sort_custom(func(a, b): return get_bone_depth(a.target_bone_skel_i) > get_bone_depth(b.target_bone_skel_i))
+	# Sort bones by hierarchy depth (root to leaf)
+	bones_to_process.sort_custom(func(a, b): return get_bone_depth(a.target_bone_skel_i) < get_bone_depth(b.target_bone_skel_i))
 
 	for bone in bones_to_process:
 		# Find the corresponding curve index
@@ -225,10 +207,6 @@ func apply_bone_frame(frame: float):
 		# Apply animation scale to position (convert from MMD units to Godot units)
 		pos *= anim_scale
 
-		# Minimal debug logging - only show head bone every 200 frames
-		if bone.name == StandardBones.get_bone_i("頭") and int(current_frame) % 200 == 0:
-			print("Frame ", current_frame, ": Head active")
-
 		# Apply smoothing to prevent jumps when skipping frames
 		if not previous_positions.has(bone.name):
 			previous_positions[bone.name] = pos
@@ -239,22 +217,19 @@ func apply_bone_frame(frame: float):
 			previous_positions[bone.name] = pos
 			previous_rotations[bone.name] = rot
 
-		# Update the Node3D transform for IK calculations and VMDSkeleton processing
-		bone.node.transform.origin = pos + bone.local_position_0
-		bone.node.transform.basis = Basis(rot)
+		# Apply VMD data as local deltas from rest pose to prevent bone stretching
+		# VMD position is in bone's local coordinate system, so transform by rest rotation
+		var desired_local_pos = bone.rest_local_position + (bone.rest_local_rotation * pos)
+		var desired_local_rot = bone.rest_local_rotation * rot
 
 		# Apply locomotion scale for specific bones
+		var final_local_pos = desired_local_pos
+		var final_local_rot = desired_local_rot
 		if bone.name == StandardBones.get_bone_i("全ての親") or bone.name == StandardBones.get_bone_i("センター") \
 				or bone.name == StandardBones.get_bone_i("左足ＩＫ") or bone.name == StandardBones.get_bone_i("右足ＩＫ"):
 			if locomotion_scale != Vector3.ONE:
-				bone.node.transform = bone.node.transform.scaled(locomotion_scale)
+				# Apply locomotion scaling to the local position (transform by rest rotation)
+				final_local_pos = bone.rest_local_position + (bone.rest_local_rotation * (pos * locomotion_scale))
 
-		# Debug: Track chest bone global transform differences
-		if bone.name == StandardBones.get_bone_i("上半身2"):  # Chest bone
-			var current_global = bone.node.global_transform
-			if previous_chest_global != Transform3D.IDENTITY:
-				var pos_diff = (current_global.origin - previous_chest_global.origin).length()
-				var rot_diff = current_global.basis.get_rotation_quaternion().angle_to(previous_chest_global.basis.get_rotation_quaternion())
-				if int(current_frame) % 50 == 0:  # Log every 50 frames
-					print("Chest Δ - Frame: ", current_frame, " PosΔ: ", "%.4f" % pos_diff, " RotΔ: ", "%.4f" % rot_diff, "°")
-			previous_chest_global = current_global
+		# Update the Node3D local transform for IK calculations and VMDSkeleton processing
+		bone.node.transform = Transform3D(Basis(final_local_rot), final_local_pos)
