@@ -178,6 +178,16 @@ func apply_bone_frame(frame: float):
 	bones_to_process.sort_custom(func(a, b): return get_bone_depth(a.target_bone_skel_i) < get_bone_depth(b.target_bone_skel_i))
 
 	for bone in bones_to_process:
+		# Skip IK bones - they should only be used as IK targets, not animated as regular bones
+		var ik_bone_names = [
+			StandardBones.get_bone_i("左足ＩＫ"),
+			StandardBones.get_bone_i("右足ＩＫ"),
+			StandardBones.get_bone_i("左つま先ＩＫ"),
+			StandardBones.get_bone_i("右つま先ＩＫ")
+		]
+		if bone.name in ik_bone_names:
+			continue  # Skip IK bones from regular animation
+
 		# Find the corresponding curve index
 		var curve_index = -1
 		for j in range(vmd_skeleton.bones.size()):
