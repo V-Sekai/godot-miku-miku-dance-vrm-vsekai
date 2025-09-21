@@ -7,9 +7,8 @@ var starting_file_path: String
 @export_node_path
 var animator_path: NodePath
 @onready
-var camera: Camera3D
-@onready
 var animator: VRMAnimator = get_node(animator_path)
+var camera_controller: VMDCameraController
 @export
 var anim_scale := 0.07
 @export
@@ -84,14 +83,12 @@ func load_motions(motion_paths: Array):
 		set_process(true)
 		start_time = Time.get_ticks_msec()
 
-		# Handle camera
-		if camera:
-			camera.queue_free()
-		if motion.camera.keyframes.size() > 0:
-			camera = Camera3D.new()
-			animator.add_child(camera)
-			camera.owner = animator.owner
-			camera.make_current()
+		# Initialize camera controller
+		if not camera_controller:
+			camera_controller = VMDCameraController.new()
+			add_child(camera_controller)
+		camera_controller.anim_scale = anim_scale
+		camera_controller.setup_camera(animator, motion)
 
 func _ready():
 	print("VMDPlayer: _ready called, animator_path: ", animator_path)
@@ -119,19 +116,5 @@ func _process(delta):
 
 func _on_vmd_modification_processed():
 	# Handle camera animation after VMD modifications are complete
-	if camera and motion:
-		apply_camera_frame(current_frame)
-
-func apply_camera_frame(frame: float):
-	frame = max(frame, 0.0)
-	var camera_sample = motion.camera.sample(frame) as Motion.CameraCurve.CameraSampleResult
-	var target_pos = camera_sample.position
-	var quat = Quaternion.IDENTITY
-	var rot = camera_sample.rotation
-	quat.set_euler(rot)
-	var camera_pos = target_pos
-	target_pos.z *= -1
-	camera.global_transform.basis = Basis(quat)
-	camera.global_transform.origin = (target_pos + (quat * Vector3.FORWARD) * camera_sample.distance) * anim_scale
-
-	camera.fov = camera_sample.angle
+	if camera_controller:
+		camera_controller.apply_camera_frame(current_frame)
