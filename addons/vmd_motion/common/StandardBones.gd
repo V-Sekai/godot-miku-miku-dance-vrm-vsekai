@@ -1,3 +1,4 @@
+# This should be added to autoloads...
 extends Node
 
 const BONE_NAMES = [
@@ -44,7 +45,7 @@ var constraints = []
 
 func get_bone_i(bone_name: String) -> int:
 	return bone_names.get(bone_name, -1)
-	
+
 func get_bone_name(bone_i: int):
 	return BONE_NAMES[bone_i]
 
@@ -53,78 +54,78 @@ func _init():
 	for bone_name in BONE_NAMES:
 		bone_names[bone_name] = i
 		i += 1
-	
+
 	for bone_name in MIRROR_BONE_NAMES:
 		mirror_bone_names[bone_name] = get_bone_i(bone_name)
-	
+
 	bones = [
 		StandardBone.new(get_bone_i("全ての親"), null, null, null),
-		StandardBone.new(get_bone_i("センター"), get_bone_i("全ての親"), "Spine", null),
+		StandardBone.new(get_bone_i("センター"), get_bone_i("全ての親"), "spine", null),
 		StandardBone.new(get_bone_i("グルーブ"), get_bone_i("センター"), null, null),
 		StandardBone.new(get_bone_i("腰"), get_bone_i("グルーブ"), null, null),
-		StandardBone.new(get_bone_i("下半身"), get_bone_i("腰"), "Spine", "Hips"),
-		StandardBone.new(get_bone_i("上半身"), get_bone_i("腰"), "Spine", "Spine"),
-		StandardBone.new(get_bone_i("上半身2"), get_bone_i("上半身"), "Chest", "Chest"),
-		StandardBone.new(get_bone_i("首"), get_bone_i("上半身2"), "Neck", "Neck"),
-		StandardBone.new(get_bone_i("頭"), get_bone_i("首"), "Head", "Head"),
+		StandardBone.new(get_bone_i("下半身"), get_bone_i("腰"), "spine", "hips"),
+		StandardBone.new(get_bone_i("上半身"), get_bone_i("腰"), "spine", "spine"),
+		StandardBone.new(get_bone_i("上半身2"), get_bone_i("上半身"), "chest", "chest"),
+		StandardBone.new(get_bone_i("首"), get_bone_i("上半身2"), "neck", "neck"),
+		StandardBone.new(get_bone_i("頭"), get_bone_i("首"), "head", "head"),
 		StandardBone.new(get_bone_i("両目"), get_bone_i("頭"), null, null),
-		StandardBone.new(get_bone_i("左目"), get_bone_i("頭"), "LeftEye", "LeftEye"),
-		StandardBone.new(get_bone_i("右目"), get_bone_i("頭"), "RightEye", "RightEye"),
-		
-		StandardBone.new(get_bone_i("左肩P"), get_bone_i("上半身2"), "LeftShoulder", null),
-		StandardBone.new(get_bone_i("左肩"), get_bone_i("左肩P"), null, "LeftShoulder"),
-		StandardBone.new(get_bone_i("左肩C"), get_bone_i("左肩"), "LeftUpperArm", null),
-		StandardBone.new(get_bone_i("左腕"), get_bone_i("左肩C"), null, "LeftUpperArm"),
-		StandardBone.new(get_bone_i("左腕捩"), get_bone_i("左腕"), "LeftLowerArm", null),
-		StandardBone.new(get_bone_i("左ひじ"), get_bone_i("左腕捩"), null, "LeftLowerArm"),
-		StandardBone.new(get_bone_i("左手捩"), get_bone_i("左ひじ"), "LeftHand", null),
-		StandardBone.new(get_bone_i("左手首"), get_bone_i("左手捩"), null, "LeftHand"),
-		
-		StandardBone.new(get_bone_i("右肩P"), get_bone_i("上半身2"), "RightShoulder", null),
-		StandardBone.new(get_bone_i("右肩"), get_bone_i("右肩P"), null, "RightShoulder"),
-		StandardBone.new(get_bone_i("右肩C"), get_bone_i("右肩"), "RightUpperArm", null),
-		StandardBone.new(get_bone_i("右腕"), get_bone_i("右肩C"), null, "RightUpperArm"),
-		StandardBone.new(get_bone_i("右腕捩"), get_bone_i("右腕"), "RightLowerArm", null),
-		StandardBone.new(get_bone_i("右ひじ"), get_bone_i("右腕捩"), null, "RightLowerArm"),
-		StandardBone.new(get_bone_i("右手捩"), get_bone_i("右ひじ"), "RightHand", null),
-		StandardBone.new(get_bone_i("右手首"), get_bone_i("右手捩"), null, "RightHand"),
-		
-		StandardBone.new(get_bone_i("左足IK親"), get_bone_i("全ての親"), "LeftFoot", null),
+		StandardBone.new(get_bone_i("左目"), get_bone_i("頭"), "leftEye", "leftEye"),
+		StandardBone.new(get_bone_i("右目"), get_bone_i("頭"), "rightEye", "rightEye"),
+
+		StandardBone.new(get_bone_i("左肩P"), get_bone_i("上半身2"), "leftShoulder", null),
+		StandardBone.new(get_bone_i("左肩"), get_bone_i("左肩P"), null, "leftShoulder"),
+		StandardBone.new(get_bone_i("左肩C"), get_bone_i("左肩"), "leftUpperArm", null),
+		StandardBone.new(get_bone_i("左腕"), get_bone_i("左肩C"), null, "leftUpperArm"),
+		StandardBone.new(get_bone_i("左腕捩"), get_bone_i("左腕"), "leftLowerArm", null),
+		StandardBone.new(get_bone_i("左ひじ"), get_bone_i("左腕捩"), null, "leftLowerArm"),
+		StandardBone.new(get_bone_i("左手捩"), get_bone_i("左ひじ"), "leftHand", null),
+		StandardBone.new(get_bone_i("左手首"), get_bone_i("左手捩"), null, "leftHand"),
+
+		StandardBone.new(get_bone_i("右肩P"), get_bone_i("上半身2"), "rightShoulder", null),
+		StandardBone.new(get_bone_i("右肩"), get_bone_i("右肩P"), null, "rightShoulder"),
+		StandardBone.new(get_bone_i("右肩C"), get_bone_i("右肩"), "rightUpperArm", null),
+		StandardBone.new(get_bone_i("右腕"), get_bone_i("右肩C"), null, "rightUpperArm"),
+		StandardBone.new(get_bone_i("右腕捩"), get_bone_i("右腕"), "rightLowerArm", null),
+		StandardBone.new(get_bone_i("右ひじ"), get_bone_i("右腕捩"), null, "rightLowerArm"),
+		StandardBone.new(get_bone_i("右手捩"), get_bone_i("右ひじ"), "rightHand", null),
+		StandardBone.new(get_bone_i("右手首"), get_bone_i("右手捩"), null, "rightHand"),
+
+		StandardBone.new(get_bone_i("左足IK親"), get_bone_i("全ての親"), "leftFoot", null),
 		StandardBone.new(get_bone_i("左足ＩＫ"), get_bone_i("左足IK親"), null, null),
-		StandardBone.new(get_bone_i("左つま先ＩＫ"), get_bone_i("左足ＩＫ"), "LeftToe", null),
-		StandardBone.new(get_bone_i("左足"), get_bone_i("下半身"), "LeftUpperLeg", null),
-		StandardBone.new(get_bone_i("左足D"), get_bone_i("下半身"), "LeftUpperLeg", "leftUpperLeg"),
-		StandardBone.new(get_bone_i("左ひざ"), get_bone_i("左足"), "LeftLowerLeg", null),
-		StandardBone.new(get_bone_i("左ひざD"), get_bone_i("左足D"), "LeftLowerLeg", "leftLowerLeg"),
-		StandardBone.new(get_bone_i("左足首"), get_bone_i("左ひざ"), "LeftFoot", null),
-		StandardBone.new(get_bone_i("左足首D"), get_bone_i("左ひざD"), "LeftFoot", "leftFoot"),
-		StandardBone.new(get_bone_i("左つま先"), get_bone_i("左足首"), "LeftToes", null),
-		StandardBone.new(get_bone_i("左足先EX"), get_bone_i("左足首D"), "LeftToes", "leftToes"),
-		
-		StandardBone.new(get_bone_i("右足IK親"), get_bone_i("全ての親"), "RightFoot", null),
+		StandardBone.new(get_bone_i("左つま先ＩＫ"), get_bone_i("左足ＩＫ"), "leftToes", null),
+		StandardBone.new(get_bone_i("左足"), get_bone_i("下半身"), "leftUpperLeg", null),
+		StandardBone.new(get_bone_i("左足D"), get_bone_i("下半身"), "leftUpperLeg", "leftUpperLeg"),
+		StandardBone.new(get_bone_i("左ひざ"), get_bone_i("左足"), "leftLowerLeg", null),
+		StandardBone.new(get_bone_i("左ひざD"), get_bone_i("左足D"), "leftLowerLeg", "leftLowerLeg"),
+		StandardBone.new(get_bone_i("左足首"), get_bone_i("左ひざ"), "leftFoot", null),
+		StandardBone.new(get_bone_i("左足首D"), get_bone_i("左ひざD"), "leftFoot", "leftFoot"),
+		StandardBone.new(get_bone_i("左つま先"), get_bone_i("左足首"), "leftToes", null),
+		StandardBone.new(get_bone_i("左足先EX"), get_bone_i("左足首D"), "leftToes", "leftToes"),
+
+		StandardBone.new(get_bone_i("右足IK親"), get_bone_i("全ての親"), "rightFoot", null),
 		StandardBone.new(get_bone_i("右足ＩＫ"), get_bone_i("右足IK親"), null, null),
-		StandardBone.new(get_bone_i("右つま先ＩＫ"), get_bone_i("右足ＩＫ"), "RightToe", null),
-		StandardBone.new(get_bone_i("右足"), get_bone_i("下半身"), "RightUpperLeg", null),
-		StandardBone.new(get_bone_i("右足D"), get_bone_i("下半身"), "RightUpperLeg", "rightUpperLeg"),
-		StandardBone.new(get_bone_i("右ひざ"), get_bone_i("右足"), "RightLowerLeg", null),
-		StandardBone.new(get_bone_i("右ひざD"), get_bone_i("右足D"), "RightLowerLeg", "rightLowerLeg"),
-		StandardBone.new(get_bone_i("右足首"), get_bone_i("右ひざ"), "RightFoot", null),
-		StandardBone.new(get_bone_i("右足首D"), get_bone_i("右ひざD"), "RightFoot", "rightFoot"),
-		StandardBone.new(get_bone_i("右つま先"), get_bone_i("右足首"), "RightToe", null),
-		StandardBone.new(get_bone_i("右足先EX"), get_bone_i("右足首D"), "RightToe", "rightToes")
+		StandardBone.new(get_bone_i("右つま先ＩＫ"), get_bone_i("右足ＩＫ"), "rightToes", null),
+		StandardBone.new(get_bone_i("右足"), get_bone_i("下半身"), "rightUpperLeg", null),
+		StandardBone.new(get_bone_i("右足D"), get_bone_i("下半身"), "rightUpperLeg", "rightUpperLeg"),
+		StandardBone.new(get_bone_i("右ひざ"), get_bone_i("右足"), "rightLowerLeg", null),
+		StandardBone.new(get_bone_i("右ひざD"), get_bone_i("右足D"), "rightLowerLeg", "rightLowerLeg"),
+		StandardBone.new(get_bone_i("右足首"), get_bone_i("右ひざ"), "rightFoot", null),
+		StandardBone.new(get_bone_i("右足首D"), get_bone_i("右ひざD"), "rightFoot", "rightFoot"),
+		StandardBone.new(get_bone_i("右つま先"), get_bone_i("右足首"), "rightToes", null),
+		StandardBone.new(get_bone_i("右足先EX"), get_bone_i("右足首D"), "rightToes", "rightToes")
 	]
-	
+
 	var finger_bone_groups = [
-		[get_bone_i("左手首"), get_bone_i("左親指０"), get_bone_i("左親指１"), get_bone_i("左親指２"), "LeftThumbProximal",  "LeftThumbIntermediate",  "LeftThumbDistal"],
-		[get_bone_i("左手首"), get_bone_i("左人指１"), get_bone_i("左人指２"), get_bone_i("左人指３"), "LeftIndexProximal",  "LeftIndexIntermediate",  "LeftIndexDistal"],
-		[get_bone_i("左手首"), get_bone_i("左中指１"), get_bone_i("左中指２"), get_bone_i("左中指３"), "LeftMiddleProximal", "LeftMiddleIntermediate", "LeftMiddleDistal"],
-		[get_bone_i("左手首"), get_bone_i("左薬指１"), get_bone_i("左薬指２"), get_bone_i("左薬指３"), "LeftRingProximal",   "LeftRingIntermediate",   "LeftRingDistal"],
-		[get_bone_i("左手首"), get_bone_i("左小指１"), get_bone_i("左小指２"), get_bone_i("左小指３"), "LeftLittleProximal", "LeftLittleIntermediate", "LeftLittleDistal"],
-		[get_bone_i("右手首"), get_bone_i("右親指０"), get_bone_i("右親指１"), get_bone_i("右親指２"), "RightThumbProximal",  "RightThumbIntermediate",  "RightThumbDistal"],
-		[get_bone_i("右手首"), get_bone_i("右人指１"), get_bone_i("右人指２"), get_bone_i("右人指３"), "RightIndexProximal",  "RightIndexIntermediate",  "RightIndexDistal"],
-		[get_bone_i("右手首"), get_bone_i("右中指１"), get_bone_i("右中指２"), get_bone_i("右中指３"), "RightMiddleProximal", "RightMiddleIntermediate", "RightMiddleDistal"],
-		[get_bone_i("右手首"), get_bone_i("右薬指１"), get_bone_i("右薬指２"), get_bone_i("右薬指３"), "RightRingProximal",   "RightRingIntermediate",   "RightRingDistal"],
-		[get_bone_i("右手首"), get_bone_i("右小指１"), get_bone_i("右小指２"), get_bone_i("右小指３"), "RightLittleProximal", "RightLittleIntermediate", "RightLittleDistal"],
+		[get_bone_i("左手首"), get_bone_i("左親指０"), get_bone_i("左親指１"), get_bone_i("左親指２"), "leftThumbProximal",  "leftThumbIntermediate",  "leftThumbDistal"],
+		[get_bone_i("左手首"), get_bone_i("左人指１"), get_bone_i("左人指２"), get_bone_i("左人指３"), "leftIndexProximal",  "leftIndexIntermediate",  "leftIndexDistal"],
+		[get_bone_i("左手首"), get_bone_i("左中指１"), get_bone_i("左中指２"), get_bone_i("左中指３"), "leftMiddleProximal", "leftMiddleIntermediate", "leftMiddleDistal"],
+		[get_bone_i("左手首"), get_bone_i("左薬指１"), get_bone_i("左薬指２"), get_bone_i("左薬指３"), "leftRingProximal",   "leftRingIntermediate",   "leftRingDistal"],
+		[get_bone_i("左手首"), get_bone_i("左小指１"), get_bone_i("左小指２"), get_bone_i("左小指３"), "leftLittleProximal", "leftLittleIntermediate", "leftLittleDistal"],
+		[get_bone_i("右手首"), get_bone_i("右親指０"), get_bone_i("右親指１"), get_bone_i("右親指２"), "rightThumbProximal",  "rightThumbIntermediate",  "rightThumbDistal"],
+		[get_bone_i("右手首"), get_bone_i("右人指１"), get_bone_i("右人指２"), get_bone_i("右人指３"), "rightIndexProximal",  "rightIndexIntermediate",  "rightIndexDistal"],
+		[get_bone_i("右手首"), get_bone_i("右中指１"), get_bone_i("右中指２"), get_bone_i("右中指３"), "rightMiddleProximal", "rightMiddleIntermediate", "rightMiddleDistal"],
+		[get_bone_i("右手首"), get_bone_i("右薬指１"), get_bone_i("右薬指２"), get_bone_i("右薬指３"), "rightRingProximal",   "rightRingIntermediate",   "rightRingDistal"],
+		[get_bone_i("右手首"), get_bone_i("右小指１"), get_bone_i("右小指２"), get_bone_i("右小指３"), "rightLittleProximal", "rightLittleIntermediate", "rightLittleDistal"],
 	]
 
 	var finger_bones = []
@@ -135,23 +136,23 @@ func _init():
 			StandardBone.new(group[2], group[1], group[5], group[5]),
 			StandardBone.new(group[3], group[2], group[6], group[6])
 		]
-		
+
 		finger_bones += finger_group
-	
+
 	bones += finger_bones
-	
+
 	constraints = [
 		RotAdd.new(get_bone_i("左目"), get_bone_i("両目")),
 		RotAdd.new(get_bone_i("右目"), get_bone_i("両目")),
 		RotAdd.new(get_bone_i("左肩C"), get_bone_i("左肩P"), true),
 		RotAdd.new(get_bone_i("右肩C"), get_bone_i("右肩P"), true),
-		
+
 		LimbIK.new(get_bone_i("左足ＩＫ"), get_bone_i("左足"), get_bone_i("左ひざ"), get_bone_i("左足首")),
 		LookAt.new(get_bone_i("左足ＩＫ"), get_bone_i("左つま先ＩＫ"), get_bone_i("左足首"), get_bone_i("左つま先")),
 		RotAdd.new(get_bone_i("左足D"), get_bone_i("左足")),
 		RotAdd.new(get_bone_i("左ひざD"), get_bone_i("左ひざ")),
 		RotAdd.new(get_bone_i("左足首D"), get_bone_i("左足首")),
-		
+
 		LimbIK.new(get_bone_i("右足ＩＫ"), get_bone_i("右足"), get_bone_i("右ひざ"), get_bone_i("右足首")),
 		LookAt.new(get_bone_i("右足ＩＫ"), get_bone_i("右つま先ＩＫ"), get_bone_i("右足首"), get_bone_i("右つま先")),
 		RotAdd.new(get_bone_i("右足D"), get_bone_i("右足")),
@@ -161,6 +162,8 @@ func _init():
 
 static func fix_bone_name(bone_name: String) -> String:
 	return bone_name.replace("捩れ", "捩").replace("捻", "捩")
+
+
 
 class StandardBone:
 	var name: int
